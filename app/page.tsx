@@ -25,6 +25,9 @@ export default function Home() {
               <Link href="/signup" className="text-sm hover:underline">
                 SIGN UP
               </Link>
+              <Link href="/login" className="text-sm hover:underline">
+                LOGIN
+              </Link>
             </div>
           </div>
         </div>

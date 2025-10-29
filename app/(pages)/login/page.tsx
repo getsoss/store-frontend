@@ -3,21 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SignupPage() {
+export default function LoginPage() {
   const [form, setForm] = useState({
     email: "",
-    name: "",
-    phone: "",
-    address: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const onChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -27,14 +22,11 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/members", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email,
-          name: form.name,
-          phone: form.phone,
-          address: form.address,
           password: form.password,
         }),
       });
@@ -42,25 +34,22 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(
-          data.error || `Request failed with status ${res.status}`
-        );
+        throw new Error(data?.error || "로그인 실패");
       }
 
       try {
-        sessionStorage.setItem(
-          "signupResult",
-          JSON.stringify({
-            id: data?.id ?? "",
-            email: form.email,
-            name: form.name,
-          })
-        );
+        const payload = {
+          email: form.email,
+          accessToken: data?.accessToken ?? "",
+        };
+        sessionStorage.setItem("authUser", JSON.stringify(payload));
+        sessionStorage.setItem("authToken", payload.accessToken);
+        console.log(payload.accessToken);
       } catch {}
 
-      router.push(`/signup-done`);
+      router.push("/");
     } catch (err: any) {
-      setError("회원가입 중 오류가 발생했습니다.");
+      setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -68,7 +57,7 @@ export default function SignupPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 mt-10">
-      <h1 className="text-2xl font-bold mb-4">회원가입</h1>
+      <h1 className="text-2xl font-bold mb-4">로그인</h1>
       <form onSubmit={onSubmit} className="grid gap-3">
         <label className="grid gap-1">
           <span>이메일</span>
@@ -83,42 +72,6 @@ export default function SignupPage() {
           />
         </label>
         <label className="grid gap-1">
-          <span>이름</span>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={onChange}
-            required
-            placeholder="홍길동"
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
-          />
-        </label>
-        <label className="grid gap-1">
-          <span>휴대폰</span>
-          <input
-            type="tel"
-            name="phone"
-            value={form.phone}
-            onChange={onChange}
-            required
-            placeholder="010-1234-5678"
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
-          />
-        </label>
-        <label className="grid gap-1">
-          <span>주소</span>
-          <input
-            type="text"
-            name="address"
-            value={form.address}
-            onChange={onChange}
-            required
-            placeholder="서울특별시 ..."
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
-          />
-        </label>
-        <label className="grid gap-1">
           <span>비밀번호</span>
           <input
             type="password"
@@ -127,7 +80,7 @@ export default function SignupPage() {
             onChange={onChange}
             required
             minLength={6}
-            placeholder="6자 이상 비밀번호"
+            placeholder="비밀번호"
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>
@@ -137,7 +90,7 @@ export default function SignupPage() {
           disabled={loading}
           className="px-3.5 py-2.5 rounded-md bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "처리 중..." : "회원가입"}
+          {loading ? "처리 중..." : "로그인"}
         </button>
 
         {error ? <p className="text-red-600">{error}</p> : null}
