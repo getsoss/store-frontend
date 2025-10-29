@@ -39,12 +39,15 @@ export default function SignupPage() {
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Request failed with status ${res.status}`);
+        throw new Error(
+          data.error || `Request failed with status ${res.status}`
+        );
       }
 
-      setMessage("회원가입이 완료되었습니다.");
+      setMessage(data.message || "회원가입이 완료되었습니다.");
       setForm({ email: "", name: "", phone: "", address: "", password: "" });
     } catch (err: any) {
       setError(err?.message ?? "회원가입 중 오류가 발생했습니다.");
