@@ -54,7 +54,7 @@ export default function Home() {
       <footer className="border-t border-black mt-32">
         <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="flex justify-between items-center text-sm">
-            <p className="font-light">&copy; 2024 STORE</p>
+            <p className="font-light">&copy; 2025 STORE</p>
             <div className="flex space-x-6">
               <Link href="/about" className="hover:underline">
                 ABOUT

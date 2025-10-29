@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -13,6 +14,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -47,8 +49,18 @@ export default function SignupPage() {
         );
       }
 
-      setMessage(data.message || "회원가입이 완료되었습니다.");
-      setForm({ email: "", name: "", phone: "", address: "", password: "" });
+      try {
+        sessionStorage.setItem(
+          "signupResult",
+          JSON.stringify({
+            id: data?.id ?? "",
+            email: form.email,
+            name: form.name,
+          })
+        );
+      } catch {}
+
+      router.push(`/signup-done`);
     } catch (err: any) {
       setError(err?.message ?? "회원가입 중 오류가 발생했습니다.");
     } finally {
