@@ -42,9 +42,7 @@ export default function LoginPage() {
           email: form.email,
           accessToken: data?.accessToken ?? "",
         };
-        sessionStorage.setItem("authUser", JSON.stringify(payload));
-        sessionStorage.setItem("authToken", payload.accessToken);
-        console.log(payload.accessToken);
+        localStorage.setItem("authToken", payload.accessToken);
       } catch {}
 
       router.push("/");

@@ -3,16 +3,34 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+function parseJwt(token: string | null) {
+  if (!token) return null;
+  try {
+    const base64Payload = token.split(".")[1];
+    const payload = JSON.parse(atob(base64Payload));
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   useEffect(() => {
-    const token = sessionStorage.getItem("authToken");
-    setIsLoggedIn(!!token);
+    const token = localStorage.getItem("authToken");
+    const payload = parseJwt(token);
+    console.log(payload);
+
+    if (payload && payload.exp * 1000 > Date.now()) {
+      setIsLoggedIn(true);
+    } else {
+      localStorage.removeItem("authToken");
+      setIsLoggedIn(false);
+    }
   }, []);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("authToken");
+    localStorage.removeItem("authToken");
     setIsLoggedIn(false);
     window.location.reload();
   };
