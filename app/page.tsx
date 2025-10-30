@@ -1,6 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("authToken");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("authToken");
+    setIsLoggedIn(false);
+    window.location.reload();
+  };
+
   const products = [
     { id: 1, name: "후드티", price: "29,900원" },
     { id: 2, name: "신발", price: "89,000원" },
@@ -22,12 +38,26 @@ export default function Home() {
               <Link href="/products" className="text-sm hover:underline">
                 PRODUCTS
               </Link>
-              <Link href="/signup" className="text-sm hover:underline">
-                SIGN UP
-              </Link>
-              <Link href="/login" className="text-sm hover:underline">
-                LOGIN
-              </Link>
+
+              {isLoggedIn ? (
+                <div className="flex space-x-8">
+                  <Link href="/mypage" className="text-sm hover:underline">
+                    MYPAGE
+                  </Link>
+                  <a className="text-sm hover:underline" onClick={handleLogout}>
+                    LOGOUT
+                  </a>
+                </div>
+              ) : (
+                <div className="flex space-x-8">
+                  <Link href="/signup" className="text-sm hover:underline">
+                    SIGN UP
+                  </Link>
+                  <Link href="/login" className="text-sm hover:underline">
+                    LOGIN
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
