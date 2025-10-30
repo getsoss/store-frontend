@@ -22,10 +22,38 @@ export default function SignupPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const formatPhone = (value: string) => {
+    const nums = value.replace(/[^0-9]/g, "");
+    if (nums.length <= 3) return nums;
+    if (nums.length <= 7) return `${nums.slice(0, 3)}-${nums.slice(3)}`;
+    return `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7, 11)}`;
+  };
+
+  const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setForm((prev) => ({ ...prev, phone: formatPhone(value) }));
+  };
+
+  const isValidPhone = (phone: string) => {
+    return /^\d{3}-\d{4}-\d{4}$/.test(phone);
+  };
+
+  const isValidPassword = (pw: string) => {
+    return pw.length >= 10 && /[a-zA-Z]/.test(pw) && /\d/.test(pw);
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    if (!isValidPhone(form.phone)) {
+      setError("전화번호를 010-1234-5678 형식으로 정확히 입력해주세요.");
+      return;
+    }
+    if (!isValidPassword(form.password)) {
+      setError("비밀번호는 10자 이상, 영문과 숫자를 모두 포함해야 합니다.");
+      return;
+    }
+    setLoading(true);
     try {
       const res = await fetch("/api/members", {
         method: "POST",
@@ -33,7 +61,7 @@ export default function SignupPage() {
         body: JSON.stringify({
           email: form.email,
           name: form.name,
-          phone: form.phone,
+          phone: form.phone.replace(/-/g, ""),
           address: form.address,
           password: form.password,
         }),
@@ -104,7 +132,7 @@ export default function SignupPage() {
             type="tel"
             name="phone"
             value={form.phone}
-            onChange={onChange}
+            onChange={onPhoneChange}
             required
             placeholder="010-1234-5678"
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
@@ -130,8 +158,7 @@ export default function SignupPage() {
             value={form.password}
             onChange={onChange}
             required
-            minLength={6}
-            placeholder="6자 이상 비밀번호"
+            placeholder="10자 이상의 영문, 숫자만 가능합니다."
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>
