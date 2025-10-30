@@ -60,7 +60,11 @@ export default function SignupPage() {
 
       router.push(`/signup-done`);
     } catch (err: any) {
-      setError("회원가입 중 오류가 발생했습니다.");
+      if (err.message && typeof err.message === "string") {
+        setError(err.message);
+      } else {
+        setError("회원가입 중 오류가 발생했습니다.");
+      }
     } finally {
       setLoading(false);
     }
