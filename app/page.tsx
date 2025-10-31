@@ -25,9 +25,7 @@ export default function Home() {
       setIsLoggedIn(true);
       try {
         const role = (payload as any)?.role as string | undefined;
-        const roles = (payload as any)?.roles as string[] | undefined;
-        const hasAdminRole =
-          role === "admin" || (Array.isArray(roles) && roles.includes("admin"));
+        const hasAdminRole = role === "admin";
         setIsAdmin(Boolean(hasAdminRole));
       } catch {
         setIsAdmin(false);

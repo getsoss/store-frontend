@@ -28,9 +28,7 @@ export default function ProductUploadPage() {
     }
     try {
       const role = (payload as any)?.role as string | undefined;
-      const roles = (payload as any)?.roles as string[] | undefined;
-      const isAdmin =
-        role === "admin" || (Array.isArray(roles) && roles.includes("admin"));
+      const isAdmin = role === "admin";
       if (!isAdmin) {
         router.replace("/");
         return;
