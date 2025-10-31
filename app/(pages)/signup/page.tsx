@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
@@ -9,11 +9,38 @@ export default function SignupPage() {
     name: "",
     phone: "",
     address: "",
+    addressDetail: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ((window as any).daum && (window as any).daum.Postcode) return;
+    const script = document.createElement("script");
+    script.src =
+      "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {};
+  }, []);
+
+  const openPostcode = () => {
+    if (!(window as any).daum || !(window as any).daum.Postcode) {
+      alert(
+        "주소 검색 스크립트를 불러오는 중입니다. 잠시 후 다시 시도해주세요."
+      );
+      return;
+    }
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        const address = data.roadAddress || data.address || "";
+        setForm((prev) => ({ ...prev, address }));
+      },
+    }).open();
+  };
 
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -62,7 +89,9 @@ export default function SignupPage() {
           email: form.email,
           name: form.name,
           phone: form.phone.replace(/-/g, ""),
-          address: form.address,
+          address: `${form.address}${
+            form.addressDetail ? ` ${form.addressDetail}` : ""
+          }`.trim(),
           password: form.password,
         }),
       });
@@ -140,13 +169,32 @@ export default function SignupPage() {
         </label>
         <label className="grid gap-1">
           <span>주소</span>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              name="address"
+              value={form.address}
+              onChange={onChange}
+              required
+              placeholder="도로명 주소를 검색하여 입력하세요"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
+            />
+            <button
+              type="button"
+              onClick={openPostcode}
+              className="px-3.5 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50"
+            >
+              주소검색
+            </button>
+          </div>
+        </label>
+        <label className="grid gap-1">
           <input
             type="text"
-            name="address"
-            value={form.address}
+            name="addressDetail"
+            value={form.addressDetail}
             onChange={onChange}
-            required
-            placeholder="서울특별시 ..."
+            placeholder="동/호수, 건물명, 상세 위치 등"
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>
