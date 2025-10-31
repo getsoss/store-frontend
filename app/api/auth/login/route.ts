@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await res.json(); // JSON 응답을 바로 객체로 가져옴
+    const data = await res.json();
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(

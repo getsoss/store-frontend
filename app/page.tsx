@@ -16,16 +16,26 @@ function parseJwt(token: string | null) {
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const payload = parseJwt(token);
-    console.log(payload);
 
     if (payload && payload.exp * 1000 > Date.now()) {
       setIsLoggedIn(true);
+      try {
+        const role = (payload as any)?.role as string | undefined;
+        const roles = (payload as any)?.roles as string[] | undefined;
+        const hasAdminRole =
+          role === "admin" || (Array.isArray(roles) && roles.includes("admin"));
+        setIsAdmin(Boolean(hasAdminRole));
+      } catch {
+        setIsAdmin(false);
+      }
     } else {
       localStorage.removeItem("authToken");
       setIsLoggedIn(false);
+      setIsAdmin(false);
     }
   }, []);
 
@@ -59,6 +69,14 @@ export default function Home() {
 
               {isLoggedIn ? (
                 <div className="flex space-x-8">
+                  {isAdmin && (
+                    <Link
+                      href="/products/upload"
+                      className="text-sm hover:underline"
+                    >
+                      UPLOAD
+                    </Link>
+                  )}
                   <Link href="/mypage" className="text-sm hover:underline">
                     MYPAGE
                   </Link>
