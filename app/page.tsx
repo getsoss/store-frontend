@@ -26,38 +26,38 @@ export default function Home() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [products, setProducts] = useState([]);
   useEffect(() => {
-    async () => {
-      const token = localStorage.getItem("authToken");
-      const payload = parseJwt(token);
+    // JWT 체크는 동기 처리
+    const token = localStorage.getItem("authToken");
+    const payload = token ? parseJwt(token) : null;
 
+    if (payload && payload.exp * 1000 > Date.now()) {
+      setIsLoggedIn(true);
+      const role = (payload as any)?.role;
+      setIsAdmin(role === "admin");
+    } else {
+      localStorage.removeItem("authToken");
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+    }
+
+    // 제품 요청 비동기 처리
+    const fetchProducts = async () => {
       try {
         const res = await fetch("/api/products");
         if (!res.ok) {
           const text = await res.text();
           console.error(text || "서버 요청 실패");
-        } else {
-          const data = await res.json();
-          setProducts(data);
+          return;
         }
+        const data = await res.json();
+        setProducts(data);
       } catch (error: any) {
         console.error(error?.message || "서버 요청 실패");
       }
-
-      if (payload && payload.exp * 1000 > Date.now()) {
-        setIsLoggedIn(true);
-        try {
-          const role = (payload as any)?.role as string | undefined;
-          const hasAdminRole = role === "admin";
-          setIsAdmin(Boolean(hasAdminRole));
-        } catch {
-          setIsAdmin(false);
-        }
-      } else {
-        localStorage.removeItem("authToken");
-        setIsLoggedIn(false);
-        setIsAdmin(false);
-      }
     };
+
+    // fetch 호출 시작
+    fetchProducts();
   }, []);
 
   const handleLogout = () => {
