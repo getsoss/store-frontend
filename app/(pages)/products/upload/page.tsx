@@ -35,6 +35,7 @@ export default function ProductUploadPage() {
     const token = localStorage.getItem("authToken");
     const payload = parseJwt(token);
     if (!payload || payload.exp * 1000 <= Date.now()) {
+      alert("접근 권한이 없습니다.");
       router.replace("/login");
       return;
     }
@@ -42,6 +43,7 @@ export default function ProductUploadPage() {
       const role = (payload as any)?.role as string | undefined;
       const isAdmin = role === "admin";
       if (!isAdmin) {
+        alert("접근 권한이 없습니다.");
         router.replace("/");
         return;
       }
