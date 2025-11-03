@@ -15,6 +15,11 @@ function parseJwt(token: string | null) {
   }
 }
 
+interface ImagePreview {
+  file: File;
+  preview: string;
+}
+
 export default function ProductUploadPage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
@@ -24,6 +29,7 @@ export default function ProductUploadPage() {
     price: "",
     category: "",
   });
+  const [images, setImages] = useState<ImagePreview[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -51,6 +57,41 @@ export default function ProductUploadPage() {
       [field]: value,
     }));
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const remainingSlots = 5 - images.length;
+
+    const filesToAdd = newFiles.slice(0, remainingSlots);
+    const newImages: ImagePreview[] = filesToAdd.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setImages((prev) => [...prev, ...newImages]);
+
+    // input 초기화
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => {
+      const newImages = [...prev];
+      URL.revokeObjectURL(newImages[index].preview);
+      newImages.splice(index, 1);
+      return newImages;
+    });
+  };
+
+  // 컴포넌트 언마운트 시 미리보기 URL 정리
+  useEffect(() => {
+    return () => {
+      images.forEach((image) => URL.revokeObjectURL(image.preview));
+    };
+  }, [images]);
 
   if (!allowed) return null;
 
@@ -105,6 +146,47 @@ export default function ProductUploadPage() {
                 <option value="sports">스포츠</option>
                 <option value="books">도서</option>
               </select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium block">
+              이미지 <span className="text-gray-500 text-xs">(최대 5개)</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {images.map((image, index) => (
+                <div key={index} className="relative group">
+                  <div className="aspect-square border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                    <img
+                      src={image.preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {images.length < 5 && (
+                <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                  <div className="text-center">
+                    <div className="text-2xl mb-1">+</div>
+                    <div className="text-xs text-gray-500">이미지 추가</div>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                </label>
+              )}
             </div>
           </div>
           <button
