@@ -23,11 +23,17 @@ interface ImagePreview {
 export default function ProductUploadPage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
-  const [formData, setFormData] = useState({
+  interface ProductForm {
+    name: string;
+    description: string;
+    price: number;
+    category_id: number;
+  }
+  const [formData, setFormData] = useState<ProductForm>({
     name: "",
     description: "",
-    price: "",
-    category: "",
+    price: 0,
+    category_id: 0,
   });
   const [images, setImages] = useState<ImagePreview[]>([]);
 
@@ -88,6 +94,32 @@ export default function ProductUploadPage() {
     });
   };
 
+  const handleClickUpload = async () => {
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("price", String(formData.price));
+      formDataToSend.append("category_id", String(formData.category_id));
+      images.forEach((image) => {
+        formDataToSend.append("images", image.file);
+      });
+
+      const res = await fetch("/api/products", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      if (!res.ok) {
+        throw new Error("업로드 실패");
+      }
+      const data = await res.json();
+      console.log("업로드 성공", data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // 컴포넌트 언마운트 시 미리보기 URL 정리
   useEffect(() => {
     return () => {
@@ -136,17 +168,19 @@ export default function ProductUploadPage() {
               <select
                 id="category"
                 className="w-full border p-2 rounded text-base"
-                value={formData.category}
-                onChange={(e) => handleInputChange("category", e.target.value)}
+                value={formData.category_id}
+                onChange={(e) =>
+                  handleInputChange("category_id", e.target.value)
+                }
                 required
               >
                 <option value="">카테고리 선택</option>
-                <option value="electronics">전자제품</option>
-                <option value="fashion">패션</option>
-                <option value="beauty">뷰티</option>
-                <option value="home">홈/리빙</option>
-                <option value="sports">스포츠</option>
-                <option value="books">도서</option>
+                <option value="1">전자제품</option>
+                <option value="2">패션</option>
+                <option value="3">뷰티</option>
+                <option value="4">홈/리빙</option>
+                <option value="5">스포츠</option>
+                <option value="6">도서</option>
               </select>
             </div>
           </div>
@@ -193,7 +227,7 @@ export default function ProductUploadPage() {
           </div>
           <button
             className="px-3.5 py-2.5 rounded-md bg-gray-200 text-gray-800"
-            disabled
+            onClick={handleClickUpload}
           >
             등록하기
           </button>
