@@ -27,13 +27,13 @@ export default function ProductUploadPage() {
     name: string;
     description: string;
     price: number;
-    category_id: number;
+    categoryId: number;
   }
   const [formData, setFormData] = useState<ProductForm>({
     name: "",
     description: "",
     price: 0,
-    category_id: 0,
+    categoryId: 0,
   });
   const [images, setImages] = useState<ImagePreview[]>([]);
 
@@ -100,7 +100,7 @@ export default function ProductUploadPage() {
       formDataToSend.append("name", formData.name);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("price", String(formData.price));
-      formDataToSend.append("category_id", String(formData.category_id));
+      formDataToSend.append("category_id", String(formData.categoryId));
       images.forEach((image) => {
         formDataToSend.append("images", image.file);
       });
@@ -168,7 +168,7 @@ export default function ProductUploadPage() {
               <select
                 id="category"
                 className="w-full border p-2 rounded text-base"
-                value={formData.category_id}
+                value={formData.categoryId}
                 onChange={(e) =>
                   handleInputChange("category_id", e.target.value)
                 }

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
 function parseJwt(token: string | null) {
   if (!token) return null;
   try {
@@ -14,27 +13,51 @@ function parseJwt(token: string | null) {
   }
 }
 
+interface Product {
+  productId: number;
+  name: string;
+  description: string;
+  price: number;
+  categoryId: number;
+}
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [products, setProducts] = useState([]);
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const payload = parseJwt(token);
+    async () => {
+      const token = localStorage.getItem("authToken");
+      const payload = parseJwt(token);
 
-    if (payload && payload.exp * 1000 > Date.now()) {
-      setIsLoggedIn(true);
       try {
-        const role = (payload as any)?.role as string | undefined;
-        const hasAdminRole = role === "admin";
-        setIsAdmin(Boolean(hasAdminRole));
-      } catch {
+        const res = await fetch("/api/products");
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(text || "서버 요청 실패");
+        } else {
+          const data = await res.json();
+          setProducts(data);
+        }
+      } catch (error: any) {
+        console.error(error?.message || "서버 요청 실패");
+      }
+
+      if (payload && payload.exp * 1000 > Date.now()) {
+        setIsLoggedIn(true);
+        try {
+          const role = (payload as any)?.role as string | undefined;
+          const hasAdminRole = role === "admin";
+          setIsAdmin(Boolean(hasAdminRole));
+        } catch {
+          setIsAdmin(false);
+        }
+      } else {
+        localStorage.removeItem("authToken");
+        setIsLoggedIn(false);
         setIsAdmin(false);
       }
-    } else {
-      localStorage.removeItem("authToken");
-      setIsLoggedIn(false);
-      setIsAdmin(false);
-    }
+    };
   }, []);
 
   const handleLogout = () => {
@@ -42,15 +65,6 @@ export default function Home() {
     setIsLoggedIn(false);
     window.location.reload();
   };
-
-  const products = [
-    { id: 1, name: "후드티", price: "29,900원" },
-    { id: 2, name: "신발", price: "89,000원" },
-    { id: 3, name: "양말", price: "15,000원" },
-    { id: 4, name: "패딩", price: "129,000원" },
-    { id: 5, name: "모자", price: "49,000원" },
-    { id: 6, name: "바지", price: "79,000원" },
-  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -101,9 +115,9 @@ export default function Home() {
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {products.map((product) => (
+          {products.map((product: Product) => (
             <div
-              key={product.id}
+              key={product.productId}
               className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
             >
               <div className="aspect-square bg-gray-100 flex items-center justify-center">
