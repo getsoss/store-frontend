@@ -18,6 +18,12 @@ function parseJwt(token: string | null) {
 export default function ProductUploadPage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -39,6 +45,13 @@ export default function ProductUploadPage() {
     }
   }, [router]);
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   if (!allowed) return null;
 
   return (
@@ -51,18 +64,49 @@ export default function ProductUploadPage() {
       </div>
 
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <p className="text-sm text-gray-600 mb-4">
-          상품 등록 기능은 준비 중입니다.
-        </p>
         <div className="grid grid-cols-1 gap-4">
-          <input className="border p-2 rounded" placeholder="상품명" disabled />
-          <input className="border p-2 rounded" placeholder="가격" disabled />
+          <input
+            className="border p-2 rounded"
+            placeholder="상품명"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+          />
           <textarea
             className="border p-2 rounded"
             placeholder="설명"
             rows={4}
-            disabled
+            value={formData.description}
+            onChange={(e) => handleInputChange("description", e.target.value)}
           />
+          <input
+            className="border p-2 rounded"
+            placeholder="가격"
+            type="number"
+            value={formData.price}
+            onChange={(e) => handleInputChange("price", e.target.value)}
+          />
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="category" className="text-sm font-medium block">
+                카테고리 <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="category"
+                className="w-full border p-2 rounded text-base"
+                value={formData.category}
+                onChange={(e) => handleInputChange("category", e.target.value)}
+                required
+              >
+                <option value="">카테고리 선택</option>
+                <option value="electronics">전자제품</option>
+                <option value="fashion">패션</option>
+                <option value="beauty">뷰티</option>
+                <option value="home">홈/리빙</option>
+                <option value="sports">스포츠</option>
+                <option value="books">도서</option>
+              </select>
+            </div>
+          </div>
           <button
             className="px-3.5 py-2.5 rounded-md bg-gray-200 text-gray-800"
             disabled
