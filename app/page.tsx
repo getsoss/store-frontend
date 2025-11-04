@@ -115,20 +115,24 @@ export default function Home() {
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {products.map((product: Product) => (
-            <div
-              key={product.productId}
-              className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
-            >
-              <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                <div className="w-3/4 h-3/4 border border-gray-300"></div>
+          {products.length > 0 ? (
+            products.map((product: Product) => (
+              <div
+                key={product.productId}
+                className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
+              >
+                <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                  <div className="w-3/4 h-3/4 border border-gray-300"></div>
+                </div>
+                <div className="p-4 space-y-1">
+                  <h3 className="text-sm font-medium">{product.name}</h3>
+                  <p className="text-sm font-light">{product.price}</p>
+                </div>
               </div>
-              <div className="p-4 space-y-1">
-                <h3 className="text-sm font-medium">{product.name}</h3>
-                <p className="text-sm font-light">{product.price}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div>상품이 없습니다.</div>
+          )}
         </div>
       </main>
 

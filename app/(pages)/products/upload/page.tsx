@@ -170,7 +170,7 @@ export default function ProductUploadPage() {
                 className="w-full border p-2 rounded text-base"
                 value={formData.categoryId}
                 onChange={(e) =>
-                  handleInputChange("category_id", e.target.value)
+                  handleInputChange("categoryId", e.target.value)
                 }
                 required
               >
