@@ -22,21 +22,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const form = await request.formData();
-    const name = form.get("name") as string | null;
-    const description = form.get("description") as string | null;
-    const priceStr = form.get("price") as string | null;
-    const categoryIdStr = form.get("category_id") as string | null;
+    // 🔹 JSON 데이터 파싱
+    const { name, description, price, category_id } = await request.json();
 
-    const price = priceStr != null ? Number(priceStr) : undefined;
-    const categoryId =
-      categoryIdStr != null ? Number(categoryIdStr) : undefined;
-
-    const body: any = {
-      name: name ?? undefined,
-      description: description ?? undefined,
+    const body = {
+      name,
+      description,
       price,
-      categoryId,
+      categoryId: category_id, // 필드명 맞추기기
     };
 
     const res = await fetch("http://localhost:8080/api/products", {
@@ -47,20 +40,20 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await res.text();
+    const text = await res.text();
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: data || "Request failed" },
+        { error: text || "Request failed" },
         { status: res.status }
       );
     }
 
-    return NextResponse.json(
-      { message: "상품이 등록되었습니다." },
-      { status: 200 }
-    );
+    // 🔹 백엔드에서 반환된 상품 데이터 그대로 전달
+    const created = text ? JSON.parse(text) : null;
+    return NextResponse.json(created, { status: 200 });
   } catch (error: any) {
+    console.error("상품 업로드 오류:", error);
     return NextResponse.json(
       { error: error?.message || "서버 오류가 발생했습니다." },
       { status: 500 }

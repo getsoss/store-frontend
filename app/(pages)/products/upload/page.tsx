@@ -96,25 +96,43 @@ export default function ProductUploadPage() {
 
   const handleClickUpload = async () => {
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("price", String(formData.price));
-      formDataToSend.append("category_id", String(formData.categoryId));
-      images.forEach((image) => {
-        formDataToSend.append("images", image.file);
-      });
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        category_id: formData.categoryId,
+      };
 
       const res = await fetch("/api/products", {
         method: "POST",
-        body: formDataToSend,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productData),
       });
 
       if (!res.ok) {
         throw new Error("업로드 실패");
       }
-      const data = await res.json();
-      console.log("업로드 성공", data);
+      const created = await res.json();
+      const productId = created?.productId ?? created?.id;
+      if (!productId) {
+        throw new Error("상품 ID를 가져오지 못했습니다.");
+      }
+
+      if (images.length > 0) {
+        const imgForm = new FormData();
+        images.forEach((image) => imgForm.append("images", image.file));
+        const imgRes = await fetch(`/api/products/${productId}/images`, {
+          method: "POST",
+          body: imgForm,
+        });
+        if (!imgRes.ok) {
+          const errText = await imgRes.text();
+          throw new Error(errText || "이미지 업로드 실패");
+        }
+      }
+
+      alert("상품이 등록되었습니다.");
+      router.replace("/");
     } catch (error) {
       console.error(error);
     }
