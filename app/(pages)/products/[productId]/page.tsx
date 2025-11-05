@@ -10,7 +10,13 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  categoryId: number;
+  categoryName: string;
+}
+
+interface Category {
+  categoryId: string;
+  name: string;
+  parent_category_id: number;
 }
 
 interface ProductImage {
@@ -22,6 +28,7 @@ interface ProductImage {
 export default function ProductDetailPage() {
   const params = useParams();
   const [productInfo, setProductInfo] = useState<Product>();
+  const [categoryInfo, setCategoryInfo] = useState<Category>();
   const [images, setImages] = useState<ProductImage[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -35,9 +42,9 @@ export default function ProductDetailPage() {
       }
 
       const data = await res.json();
-
       setProductInfo(data.product);
       setImages(data.images);
+      setCategoryInfo(data.category);
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
     }
@@ -127,7 +134,7 @@ export default function ProductDetailPage() {
             <div className="space-y-6">
               <div>
                 <span className="text-sm text-gray-500 uppercase tracking-wide">
-                  {productInfo?.categoryId}
+                  {categoryInfo?.name}
                 </span>
                 <h1 className="text-4xl font-light mt-2 mb-4 tracking-tight">
                   {productInfo?.name}
@@ -157,7 +164,7 @@ export default function ProductDetailPage() {
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-500">카테고리</dt>
-                    <dd className="font-medium">{productInfo?.categoryId}</dd>
+                    <dd className="font-medium">{productInfo?.categoryName}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-500">가격</dt>

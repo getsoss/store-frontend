@@ -193,12 +193,7 @@ export default function ProductUploadPage() {
                 required
               >
                 <option value="">카테고리 선택</option>
-                <option value="1">전자제품</option>
-                <option value="2">패션</option>
-                <option value="3">뷰티</option>
-                <option value="4">홈/리빙</option>
-                <option value="5">스포츠</option>
-                <option value="6">도서</option>
+                <option value="1">상의</option>
               </select>
             </div>
           </div>
