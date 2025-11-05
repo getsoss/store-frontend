@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 function parseJwt(token: string | null) {
@@ -21,10 +22,18 @@ interface Product {
   categoryId: number;
 }
 
+interface Image {
+  imageId: number;
+  productId: number;
+  imageUrl: string;
+  isMain: boolean;
+}
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [products, setProducts] = useState([]);
+  const [images, setImages] = useState<Image[]>([]);
   useEffect(() => {
     // JWT 체크는 동기 처리
     const token = localStorage.getItem("authToken");
@@ -56,8 +65,28 @@ export default function Home() {
       }
     };
 
+    const fetchProductsImages = async () => {
+      try {
+        const res = await fetch("/api/products/images");
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(text || "서버 요청 실패");
+          return;
+        }
+
+        const data = await res.json();
+        const onlyMainImages = data.filter(
+          (image: Image) => image.isMain === true
+        );
+        setImages(onlyMainImages);
+      } catch (error: any) {
+        console.error(error?.message || "서버 요청 실패");
+      }
+    };
+
     // fetch 호출 시작
     fetchProducts();
+    fetchProductsImages();
   }, []);
 
   const handleLogout = () => {
@@ -66,6 +95,7 @@ export default function Home() {
     window.location.reload();
   };
 
+  console.log(images);
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-black">
@@ -116,13 +146,29 @@ export default function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
-            products.map((product: Product) => (
+            products.map((product: Product, id) => (
               <div
                 key={product.productId}
                 className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
               >
                 <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                  <div className="w-3/4 h-3/4 border border-gray-300"></div>
+                  <div className="w-3/4 h-3/4 border border-gray-300">
+                    {images.length > 0 ? (
+                      <Image
+                        src={images[id].imageUrl}
+                        width={500}
+                        height={500}
+                        alt="Picture of the author"
+                        style={{
+                          objectFit: "cover",
+                          width: "100%",
+                          height: "100%",
+                        }}
+                      />
+                    ) : (
+                      <div> 이미지 없음</div>
+                    )}
+                  </div>
                 </div>
                 <div className="p-4 space-y-1">
                   <h3 className="text-sm font-medium">{product.name}</h3>
