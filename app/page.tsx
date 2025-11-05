@@ -147,34 +147,40 @@ export default function Home() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
             products.map((product: Product, id) => (
-              <div
+              <Link
                 key={product.productId}
-                className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
+                href={`/products/${product.productId}`}
+                className="hover:underline"
               >
-                <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                  <div className="w-3/4 h-3/4 border border-gray-300">
-                    {images.length > 0 ? (
-                      <Image
-                        src={images[id].imageUrl}
-                        width={500}
-                        height={500}
-                        alt="Picture of the author"
-                        style={{
-                          objectFit: "cover",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      />
-                    ) : (
-                      <div> 이미지 없음</div>
-                    )}
+                <div
+                  key={product.productId}
+                  className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
+                >
+                  <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                    <div className="w-3/4 h-3/4 border border-gray-300">
+                      {images.length > 0 ? (
+                        <Image
+                          src={images[id].imageUrl}
+                          width={500}
+                          height={500}
+                          alt="Picture of the author"
+                          style={{
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                          }}
+                        />
+                      ) : (
+                        <div> 이미지 없음</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-1">
+                    <h3 className="text-sm font-medium">{product.name}</h3>
+                    <p className="text-sm font-light">{product.price}원</p>
                   </div>
                 </div>
-                <div className="p-4 space-y-1">
-                  <h3 className="text-sm font-medium">{product.name}</h3>
-                  <p className="text-sm font-light">{product.price}</p>
-                </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div>상품이 없습니다.</div>
