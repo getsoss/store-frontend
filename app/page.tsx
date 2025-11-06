@@ -14,6 +14,11 @@ function parseJwt(token: string | null) {
   }
 }
 
+interface ProductCardProps {
+  product: Product;
+  image: Image | null;
+}
+
 interface Product {
   productId: number;
   name: string;
@@ -95,6 +100,39 @@ export default function Home() {
     window.location.reload();
   };
 
+  const ProductCard = ({ product, image }: ProductCardProps) => {
+    return (
+      <Link
+        key={product.productId}
+        href={`/products/${product.productId}`}
+        className="hover:underline"
+      >
+        <div className="border border-black cursor-pointer hover:bg-black hover:text-white transition">
+          <div className="aspect-square bg-gray-100 flex items-center justify-center">
+            <div className="w-3/4 h-3/4 border border-gray-300 flex items-center justify-center">
+              {image && image.imageUrl ? (
+                <img
+                  src={image.imageUrl}
+                  alt={product.name}
+                  className="object-contain w-full h-full"
+                />
+              ) : (
+                <span className="text-gray-500 text-sm">
+                  이미지가 없습니다.
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 space-y-1">
+            <h3 className="text-sm font-medium">{product.name}</h3>
+            <p className="text-sm font-light">{product.price}원</p>
+          </div>
+        </div>
+      </Link>
+    );
+  };
+
   console.log(images);
   return (
     <div className="min-h-screen bg-white">
@@ -143,48 +181,20 @@ export default function Home() {
 
       <main className="max-w-6xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
-
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {products.length > 0 ? (
-            products.map((product: Product, id) => (
-              <Link
+          {products.map((product: Product) => {
+            const image = images.find(
+              (img) => img.productId === product.productId
+            ) as Image;
+
+            return (
+              <ProductCard
                 key={product.productId}
-                href={`/products/${product.productId}`}
-                className="hover:underline"
-              >
-                <div
-                  key={product.productId}
-                  className="border border-black cursor-pointer hover:bg-black hover:text-white transition"
-                >
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                    <div className="w-3/4 h-3/4 border border-gray-300">
-                      {images.length > 0 ? (
-                        <Image
-                          src={images[id].imageUrl}
-                          width={500}
-                          height={500}
-                          alt="Picture of the author"
-                          style={{
-                            objectFit: "cover",
-                            width: "100%",
-                            height: "100%",
-                          }}
-                        />
-                      ) : (
-                        <div> 이미지 없음</div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="p-4 space-y-1">
-                    <h3 className="text-sm font-medium">{product.name}</h3>
-                    <p className="text-sm font-light">{product.price}원</p>
-                  </div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div>상품이 없습니다.</div>
-          )}
+                product={product}
+                image={image}
+              />
+            );
+          })}
         </div>
       </main>
 
