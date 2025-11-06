@@ -182,19 +182,23 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {products.map((product: Product) => {
-            const image = images.find(
-              (img) => img.productId === product.productId
-            ) as Image;
+          {products.length > 0 ? (
+            products.map((product: Product) => {
+              const image = images.find(
+                (img) => img.productId === product.productId
+              ) as Image;
 
-            return (
-              <ProductCard
-                key={product.productId}
-                product={product}
-                image={image}
-              />
-            );
-          })}
+              return (
+                <ProductCard
+                  key={product.productId}
+                  product={product}
+                  image={image}
+                />
+              );
+            })
+          ) : (
+            <div className="text-xl">상품이 없습니다. </div>
+          )}
         </div>
       </main>
 
