@@ -15,6 +15,10 @@ function parseJwt(token: string | null) {
   }
 }
 
+interface Category {
+  categoryId: number;
+  name: string;
+}
 interface ImagePreview {
   file: File;
   preview: string;
@@ -23,6 +27,7 @@ interface ImagePreview {
 export default function ProductUploadPage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
+  const [categories, setCategories] = useState([]);
   interface ProductForm {
     name: string;
     description: string;
@@ -36,6 +41,10 @@ export default function ProductUploadPage() {
     categoryId: 0,
   });
   const [images, setImages] = useState<ImagePreview[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -94,6 +103,21 @@ export default function ProductUploadPage() {
     });
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/products/upload");
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(text || "서버 요청 실패");
+        return;
+      }
+      const data = await res.json();
+      setCategories(data);
+    } catch (error: any) {
+      console.error(error?.message || "서버 요청 실패");
+    }
+  };
+
   const handleClickUpload = async () => {
     try {
       const productData = {
@@ -138,12 +162,7 @@ export default function ProductUploadPage() {
     }
   };
 
-  // 컴포넌트 언마운트 시 미리보기 URL 정리
-  useEffect(() => {
-    return () => {
-      images.forEach((image) => URL.revokeObjectURL(image.preview));
-    };
-  }, [images]);
+  console.log(categories);
 
   if (!allowed) return null;
 
@@ -193,7 +212,13 @@ export default function ProductUploadPage() {
                 required
               >
                 <option value="">카테고리 선택</option>
-                <option value="1">상의</option>
+                {categories.map((category: Category, id) => {
+                  return (
+                    <option key={id} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>

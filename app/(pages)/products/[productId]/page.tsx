@@ -159,12 +159,8 @@ export default function ProductDetailPage() {
                 </h2>
                 <dl className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-gray-500">상품 ID</dt>
-                    <dd className="font-medium">{productInfo?.productId}</dd>
-                  </div>
-                  <div className="flex justify-between">
                     <dt className="text-gray-500">카테고리</dt>
-                    <dd className="font-medium">{productInfo?.categoryName}</dd>
+                    <dd className="font-medium">{categoryInfo?.name}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-500">가격</dt>
