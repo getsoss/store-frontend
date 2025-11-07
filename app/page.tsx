@@ -3,17 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-function parseJwt(token: string | null) {
-  if (!token) return null;
-  try {
-    const base64Payload = token.split(".")[1];
-    const payload = JSON.parse(atob(base64Payload));
-    return payload;
-  } catch (e) {
-    return null;
-  }
-}
-
+import Header from "./components/Header";
 interface ProductCardProps {
   product: Product;
   image: Image | null;
@@ -35,70 +25,44 @@ interface Image {
 }
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [products, setProducts] = useState([]);
   const [images, setImages] = useState<Image[]>([]);
-  useEffect(() => {
-    // JWT 체크는 동기 처리
-    const token = localStorage.getItem("authToken");
-    const payload = token ? parseJwt(token) : null;
-
-    if (payload && payload.exp * 1000 > Date.now()) {
-      setIsLoggedIn(true);
-      const role = (payload as any)?.role;
-      setIsAdmin(role === "admin");
-    } else {
-      localStorage.removeItem("authToken");
-      setIsLoggedIn(false);
-      setIsAdmin(false);
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(text || "서버 요청 실패");
+        return;
+      }
+      const data = await res.json();
+      setProducts(data);
+    } catch (error: any) {
+      console.error(error?.message || "서버 요청 실패");
     }
-
-    // 제품 요청 비동기 처리
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("/api/products");
-        if (!res.ok) {
-          const text = await res.text();
-          console.error(text || "서버 요청 실패");
-          return;
-        }
-        const data = await res.json();
-        setProducts(data);
-      } catch (error: any) {
-        console.error(error?.message || "서버 요청 실패");
+  };
+  const fetchProductsImages = async () => {
+    try {
+      const res = await fetch("/api/products/images");
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(text || "서버 요청 실패");
+        return;
       }
-    };
 
-    const fetchProductsImages = async () => {
-      try {
-        const res = await fetch("/api/products/images");
-        if (!res.ok) {
-          const text = await res.text();
-          console.error(text || "서버 요청 실패");
-          return;
-        }
-
-        const data = await res.json();
-        const onlyMainImages = data.filter(
-          (image: Image) => image.isMain === true
-        );
-        setImages(onlyMainImages);
-      } catch (error: any) {
-        console.error(error?.message || "서버 요청 실패");
-      }
-    };
-
-    // fetch 호출 시작
+      const data = await res.json();
+      const onlyMainImages = data.filter(
+        (image: Image) => image.isMain === true
+      );
+      setImages(onlyMainImages);
+    } catch (error: any) {
+      console.error(error?.message || "서버 요청 실패");
+    }
+  };
+  useEffect(() => {
     fetchProducts();
     fetchProductsImages();
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    setIsLoggedIn(false);
-    window.location.reload();
-  };
 
   const ProductCard = ({ product, image }: ProductCardProps) => {
     return (
@@ -133,52 +97,9 @@ export default function Home() {
     );
   };
 
-  console.log(images);
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-black">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold tracking-tight">
-              STORE
-            </Link>
-            <div className="flex items-center space-x-8">
-              <Link href="/products" className="text-sm hover:underline">
-                PRODUCTS
-              </Link>
-
-              {isLoggedIn ? (
-                <div className="flex space-x-8">
-                  {isAdmin && (
-                    <Link
-                      href="/products/upload"
-                      className="text-sm hover:underline"
-                    >
-                      UPLOAD
-                    </Link>
-                  )}
-                  <Link href="/mypage" className="text-sm hover:underline">
-                    MYPAGE
-                  </Link>
-                  <a className="text-sm hover:underline" onClick={handleLogout}>
-                    LOGOUT
-                  </a>
-                </div>
-              ) : (
-                <div className="flex space-x-8">
-                  <Link href="/signup" className="text-sm hover:underline">
-                    SIGN UP
-                  </Link>
-                  <Link href="/login" className="text-sm hover:underline">
-                    LOGIN
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <Header />
       <main className="max-w-6xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Header from "@/app/components/Header";
 
 interface Product {
   productId: number;
@@ -56,24 +57,8 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* HEADER */}
-      <header className="border-b border-black">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold tracking-tight">
-            STORE
-          </Link>
-          <div className="flex items-center space-x-8">
-            <Link href="/products" className="text-sm hover:underline">
-              PRODUCTS
-            </Link>
-            <Link href="/login" className="text-sm hover:underline">
-              LOGIN
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
-      {/* MAIN */}
       <main className="max-w-6xl mx-auto px-6 py-16">
         <div className="mb-6">
           <Link
