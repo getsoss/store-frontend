@@ -5,7 +5,6 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
-    // JWT 체크는 동기 처리
     const token = localStorage.getItem("authToken");
     const payload = token ? parseJwt(token) : null;
 
