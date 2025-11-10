@@ -24,16 +24,18 @@ interface ImagePreview {
   preview: string;
 }
 
+interface ProductForm {
+  name: string;
+  description: string;
+  price: number;
+  categoryId: number;
+}
+
 export default function ProductUploadPage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
   const [categories, setCategories] = useState([]);
-  interface ProductForm {
-    name: string;
-    description: string;
-    price: number;
-    categoryId: number;
-  }
+
   const [formData, setFormData] = useState<ProductForm>({
     name: "",
     description: "",
