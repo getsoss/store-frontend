@@ -121,12 +121,13 @@ export default function ProductDetailPage() {
 
       <main className="max-w-6xl mx-auto px-6 py-16">
         <div className="mb-6">
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={() => router.back()}
             className="text-sm hover:underline inline-flex items-center"
           >
             ← 돌아가기
-          </Link>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

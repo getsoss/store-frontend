@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/app/components/Header";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface Member {
@@ -131,8 +132,9 @@ export default function MyPage() {
 
         <section className="grid gap-4 lg:grid-cols-4">
           {summaryItems.map((item) => (
-            <article
+            <Link
               key={item.title}
+              href={item.href}
               className="group flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-neutral-900 hover:shadow-md"
             >
               <div className="space-y-3">
@@ -140,19 +142,13 @@ export default function MyPage() {
                   <h2 className="text-lg font-semibold text-neutral-900">
                     {item.title}
                   </h2>
-                  <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600">
-                    0
-                  </span>
                 </div>
                 <p className="text-sm text-neutral-500">{item.description}</p>
               </div>
-              <button
-                type="button"
-                className="mt-6 inline-flex w-fit items-center gap-2 text-sm font-medium text-neutral-700 transition group-hover:text-neutral-900"
-              >
+              <span className="mt-6 inline-flex w-fit items-center gap-2 text-sm font-medium text-neutral-700 transition group-hover:text-neutral-900">
                 {item.countLabel} 보기 →
-              </button>
-            </article>
+              </span>
+            </Link>
           ))}
         </section>
 
@@ -162,26 +158,20 @@ export default function MyPage() {
               <h2 className="text-lg font-semibold text-neutral-900">
                 활동 바로가기
               </h2>
-              <button
-                type="button"
-                className="text-sm font-medium text-neutral-500 transition hover:text-neutral-900"
-              >
-                더보기
-              </button>
             </header>
 
             <div className="grid gap-3 sm:grid-cols-2">
               {recentActivity.map((item) => (
-                <button
+                <Link
                   key={item.title}
-                  type="button"
+                  href={item.href}
                   className="flex flex-col gap-1 rounded-lg border border-neutral-100 bg-neutral-50 px-4 py-3 text-left text-sm transition hover:border-neutral-900 hover:bg-white"
                 >
                   <span className="font-medium text-neutral-800">
                     {item.title}
                   </span>
                   <span className="text-neutral-500">{item.description}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </article>
@@ -197,12 +187,6 @@ export default function MyPage() {
                 최근 주문의 진행 상태를 한눈에 확인하세요.
               </p>
             </div>
-            <button
-              type="button"
-              className="text-sm font-medium text-neutral-500 transition hover:text-neutral-900"
-            >
-              주문 내역 보기
-            </button>
           </header>
 
           <div className="mt-6 grid gap-4 md:grid-cols-4">
