@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Header from "@/app/components/Header";
+import { useRouter } from "next/navigation";
 
 interface ProductDetail {
   product: {
@@ -30,6 +31,7 @@ interface ProductDetail {
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [productDetail, setProductDetail] = useState<ProductDetail>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -66,18 +68,19 @@ export default function ProductDetailPage() {
       console.error(error?.message || "서버 요청 실패");
     }
   };
-
   const handleLikeToggle = async () => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
         alert("로그인이 필요합니다.");
+        router.push("/login");
         return;
       }
 
       const productId = Number(params.productId);
+      const method = liked ? "DELETE" : "POST";
       const res = await fetch(`/api/products/${productId}/like`, {
-        method: "POST",
+        method,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -90,15 +93,17 @@ export default function ProductDetailPage() {
       }
 
       // 좋아요 상태 토글
-      setLiked(!liked);
+      const nextLiked = !liked;
+      setLiked(nextLiked);
 
       // 좋아요 개수 업데이트
       if (productDetail) {
         setProductDetail({
           ...productDetail,
-          likeCount: liked
-            ? productDetail.likeCount - 1
-            : productDetail.likeCount + 1,
+          likeCount: nextLiked
+            ? productDetail.likeCount + 1
+            : Math.max(0, productDetail.likeCount - 1),
+          isLiked: nextLiked,
         });
       }
     } catch (error: any) {
