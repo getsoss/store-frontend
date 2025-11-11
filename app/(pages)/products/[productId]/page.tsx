@@ -6,31 +6,30 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Header from "@/app/components/Header";
 
-interface Product {
-  productId: number;
-  name: string;
-  description: string;
-  price: number;
-  categoryName: string;
-}
-
-interface Category {
-  categoryId: string;
-  name: string;
-  parent_category_id: number;
-}
-
-interface ProductImage {
-  imageId: number;
-  imageUrl: string;
-  isMain: boolean;
+interface ProductDetail {
+  product: {
+    productId: number;
+    name: string;
+    description: string;
+    price: number;
+    categoryName: string;
+  };
+  category: {
+    categoryId: string;
+    name: string;
+    parent_category_id: number;
+  };
+  images: {
+    imageId: number;
+    imageUrl: string;
+    isMain: boolean;
+  }[];
+  likeCount: number;
 }
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const [productInfo, setProductInfo] = useState<Product>();
-  const [categoryInfo, setCategoryInfo] = useState<Category>();
-  const [images, setImages] = useState<ProductImage[]>([]);
+  const [productDetail, setProductDetail] = useState<ProductDetail>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const fetchProductDetail = async (productId: number) => {
@@ -43,9 +42,12 @@ export default function ProductDetailPage() {
       }
 
       const data = await res.json();
-      setProductInfo(data.product);
-      setImages(data.images);
-      setCategoryInfo(data.category);
+      setProductDetail({
+        product: data.product,
+        category: data.category,
+        images: data.images,
+        likeCount: data.likeCount,
+      });
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
     }
@@ -73,10 +75,10 @@ export default function ProductDetailPage() {
           {/* 이미지 섹션 */}
           <div className="space-y-4">
             <div className="aspect-square bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
-              {images.length > 0 ? (
+              {productDetail?.images && productDetail.images.length > 0 ? (
                 <Image
-                  src={images[selectedImageIndex].imageUrl}
-                  alt={productInfo?.name ?? ""}
+                  src={productDetail.images[selectedImageIndex].imageUrl}
+                  alt={productDetail.product?.name ?? ""}
                   width={600}
                   height={600}
                   className="w-full h-full object-cover"
@@ -89,9 +91,9 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 썸네일 */}
-            {images.length > 1 && (
+            {productDetail?.images && productDetail.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {images.map((image, index) => (
+                {productDetail.images.map((image, index) => (
                   <button
                     key={image.imageId}
                     onClick={() => setSelectedImageIndex(index)}
@@ -103,7 +105,7 @@ export default function ProductDetailPage() {
                   >
                     <Image
                       src={image.imageUrl}
-                      alt={`${productInfo?.name} ${index + 1}`}
+                      alt={`${productDetail.product?.name} ${index + 1}`}
                       width={150}
                       height={150}
                       className="w-full h-full object-cover"
@@ -119,13 +121,13 @@ export default function ProductDetailPage() {
             <div className="space-y-6">
               <div>
                 <span className="text-sm text-gray-500 uppercase tracking-wide">
-                  {categoryInfo?.name}
+                  {productDetail?.category?.name}
                 </span>
                 <h1 className="text-4xl font-light mt-2 mb-4 tracking-tight">
-                  {productInfo?.name}
+                  {productDetail?.product?.name}
                 </h1>
                 <p className="text-3xl font-medium">
-                  {productInfo?.price.toLocaleString()}원
+                  {productDetail?.product?.price.toLocaleString()}원
                 </p>
               </div>
 
@@ -134,7 +136,7 @@ export default function ProductDetailPage() {
                   상품 설명
                 </h2>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {productInfo?.description}
+                  {productDetail?.product?.description}
                 </p>
               </div>
 
@@ -145,12 +147,14 @@ export default function ProductDetailPage() {
                 <dl className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-gray-500">카테고리</dt>
-                    <dd className="font-medium">{categoryInfo?.name}</dd>
+                    <dd className="font-medium">
+                      {productDetail?.category?.name}
+                    </dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-500">가격</dt>
                     <dd className="font-medium">
-                      {productInfo?.price.toLocaleString()}원
+                      {productDetail?.product?.price.toLocaleString()}원
                     </dd>
                   </div>
                 </dl>
@@ -158,13 +162,20 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 버튼 섹션 */}
-            <div className="pt-8 space-y-3">
+            <div className="pt-8 gap-2 flex">
               <button className="w-full py-4 bg-black text-white hover:bg-gray-800 transition-colors text-sm uppercase tracking-wide">
                 장바구니에 추가
               </button>
               <button className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide">
+                찜하기
+              </button>
+              <button className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide">
                 바로 구매
               </button>
+              <div className="flex flex-col items-center">
+                <span>♥</span>
+                <span>{productDetail?.likeCount}</span>
+              </div>
             </div>
           </div>
         </div>
