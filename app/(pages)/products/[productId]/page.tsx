@@ -25,16 +25,26 @@ interface ProductDetail {
     isMain: boolean;
   }[];
   likeCount: number;
+  isLiked?: boolean;
 }
 
 export default function ProductDetailPage() {
   const params = useParams();
   const [productDetail, setProductDetail] = useState<ProductDetail>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [liked, setLiked] = useState(false);
 
   const fetchProductDetail = async (productId: number) => {
     try {
-      const res = await fetch(`/api/products/${productId}`);
+      const token = localStorage.getItem("authToken");
+      const headers: HeadersInit = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`/api/products/${productId}`, {
+        headers,
+      });
       if (!res.ok) {
         const text = await res.text();
         console.error(text || "서버 요청 실패");
@@ -47,12 +57,55 @@ export default function ProductDetailPage() {
         category: data.category,
         images: data.images,
         likeCount: data.likeCount,
+        isLiked: data.isLiked,
       });
+
+      // 좋아요 상태 초기화
+      setLiked(data.isLiked || false);
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
     }
   };
 
+  const handleLikeToggle = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      const productId = Number(params.productId);
+      const res = await fetch(`/api/products/${productId}/like`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "좋아요 처리에 실패했습니다.");
+        return;
+      }
+
+      // 좋아요 상태 토글
+      setLiked(!liked);
+
+      // 좋아요 개수 업데이트
+      if (productDetail) {
+        setProductDetail({
+          ...productDetail,
+          likeCount: liked
+            ? productDetail.likeCount - 1
+            : productDetail.likeCount + 1,
+        });
+      }
+    } catch (error: any) {
+      console.error("좋아요 처리 오류:", error);
+      alert("좋아요 처리 중 오류가 발생했습니다.");
+    }
+  };
   useEffect(() => {
     fetchProductDetail(Number(params.productId));
   }, [params.productId]);
@@ -172,10 +225,40 @@ export default function ProductDetailPage() {
               <button className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide">
                 바로 구매
               </button>
-              <div className="flex flex-col items-center">
-                <span>♥</span>
-                <span>{productDetail?.likeCount}</span>
-              </div>
+              <button
+                onClick={handleLikeToggle}
+                className={`group flex flex-col items-center justify-center px-4 py-2 border transition-all duration-300 ${
+                  liked
+                    ? "border-red-500 bg-red-50 hover:bg-red-100"
+                    : "border-black hover:bg-black hover:text-white"
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill={liked ? "#ef4444" : "none"}
+                  stroke={liked ? "#ef4444" : "currentColor"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`w-6 h-6 transition-all duration-300 ${
+                    liked
+                      ? "text-red-500 scale-110"
+                      : "text-current group-hover:text-white"
+                  }`}
+                >
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span
+                  className={`text-xs mt-1 font-medium transition-colors ${
+                    liked
+                      ? "text-red-600"
+                      : "text-current group-hover:text-white"
+                  }`}
+                >
+                  {productDetail?.likeCount || 0}
+                </span>
+              </button>
             </div>
           </div>
         </div>

@@ -6,7 +6,18 @@ export async function GET(
 ) {
   try {
     const { productId } = await params;
-    const res = await fetch(`http://localhost:8080/api/products/${productId}`);
+
+    const authorization = request.headers.get("Authorization");
+
+    const headers: HeadersInit = {};
+    if (authorization) {
+      headers["Authorization"] = authorization;
+    }
+
+    const res = await fetch(`http://localhost:8080/api/products/${productId}`, {
+      headers,
+    });
+
     if (!res.ok) {
       const text = await res.text();
       return NextResponse.json(
