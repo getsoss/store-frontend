@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { email?: string } }
+  { params }: { params: Promise<{ email?: string }> | { email?: string } }
 ) {
   try {
-    let email = params?.email;
+    const resolvedParams = await Promise.resolve(params);
+    let email = resolvedParams?.email;
     if (!email) {
       const url = new URL(request.url);
       const segments = url.pathname.split("/");
