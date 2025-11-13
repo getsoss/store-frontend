@@ -20,13 +20,13 @@ const summaryItems = [
     title: "찜 내역",
     description: "관심 있는 상품들을 한 번에 확인해요.",
     countLabel: "찜한 상품",
-    href: "/mypage/wishlist",
+    href: "/wishlist",
   },
   {
     title: "좋아요 내역",
     description: "좋아요한 리뷰와 콘텐츠를 모아봐요.",
     countLabel: "좋아요",
-    href: "/mypage/likes",
+    href: "/likes",
   },
   {
     title: "장바구니",

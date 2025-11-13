@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
+import Toast from "@/app/components/Toast";
 
 interface ProductDetail {
   product: {
@@ -38,6 +39,8 @@ export default function ProductDetailPage() {
   const [liked, setLiked] = useState(false);
   const [wished, setWished] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const fetchProductDetail = async (productId: number) => {
     try {
@@ -147,6 +150,42 @@ export default function ProductDetailPage() {
     } catch (error: any) {
       console.error("좋아요 처리 오류:", error);
       alert("좋아요 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleAddToCart = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+        return;
+      }
+
+      const productId = Number(params.productId);
+      const res = await fetch("/api/carts", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: productId,
+          quantity: quantity,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "장바구니 추가에 실패했습니다.");
+        return;
+      }
+
+      // 토스트 메시지 표시
+      setShowToast(true);
+    } catch (error: any) {
+      console.error("장바구니 추가 오류:", error);
+      alert("장바구니 추가 중 오류가 발생했습니다.");
     }
   };
   useEffect(() => {
@@ -346,9 +385,77 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {/* 수량 선택 및 총 가격 */}
+            <div className="pt-6 border-t border-gray-200">
+              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                    className="w-8 h-8 border border-gray-300 rounded bg-white hover:bg-gray-100 transition-colors flex items-center justify-center"
+                    aria-label="수량 감소"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4"
+                    >
+                      <path d="M5 12h14" />
+                    </svg>
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      setQuantity(Math.max(1, value));
+                    }}
+                    className="w-16 h-8 text-center border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <button
+                    onClick={() => setQuantity((prev) => prev + 1)}
+                    className="w-8 h-8 border border-gray-300 rounded bg-white hover:bg-gray-100 transition-colors flex items-center justify-center"
+                    aria-label="수량 증가"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4"
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500 mb-1">총 가격</p>
+                  <p className="text-2xl font-medium">
+                    {productDetail?.product?.price
+                      ? (
+                          productDetail.product.price * quantity
+                        ).toLocaleString()
+                      : 0}
+                    원
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* 버튼 섹션 */}
             <div className="pt-8 gap-2 flex">
-              <button className="w-full py-4 bg-black text-white hover:bg-gray-800 transition-colors text-sm uppercase tracking-wide">
+              <button
+                onClick={handleAddToCart}
+                className="w-full py-4 bg-black text-white hover:bg-gray-800 transition-colors text-sm uppercase tracking-wide"
+              >
                 장바구니에 추가
               </button>
               <button
@@ -420,6 +527,17 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* 토스트 메시지 */}
+      {showToast && (
+        <Toast
+          message="장바구니에 상품을 담았습니다."
+          linkText="바로가기"
+          linkHref="/cart"
+          onClose={() => setShowToast(false)}
+          duration={5000}
+        />
+      )}
 
       {/* FOOTER */}
       <footer className="border-t border-black mt-32">
