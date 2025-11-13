@@ -37,6 +37,7 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
   const [wished, setWished] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const fetchProductDetail = async (productId: number) => {
     try {
@@ -173,13 +174,31 @@ export default function ProductDetailPage() {
             <div className="relative aspect-square bg-gray-50 border border-gray-200 rounded-lg overflow-hidden group">
               {productDetail?.images && productDetail.images.length > 0 ? (
                 <>
-                  <Image
-                    src={productDetail.images[selectedImageIndex].imageUrl}
-                    alt={productDetail.product?.name ?? ""}
-                    width={600}
-                    height={600}
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="relative w-full h-full overflow-hidden">
+                    <div
+                      className="flex h-full transition-transform duration-500 ease-in-out"
+                      style={{
+                        transform: `translateX(-${selectedImageIndex * 100}%)`,
+                      }}
+                    >
+                      {productDetail.images.map((image, index) => (
+                        <div
+                          key={image.imageId}
+                          className="min-w-full h-full relative"
+                        >
+                          <Image
+                            src={image.imageUrl}
+                            alt={`${productDetail.product?.name ?? ""} ${
+                              index + 1
+                            }`}
+                            width={600}
+                            height={600}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   {/* 왼쪽/오른쪽 이동 버튼 - 이미지가 2개 이상일 때만 표시 */}
                   {productDetail.images.length > 1 && (
                     <>
@@ -187,11 +206,14 @@ export default function ProductDetailPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (isTransitioning) return;
+                          setIsTransitioning(true);
                           setSelectedImageIndex((prev) =>
                             prev === 0
                               ? productDetail.images.length - 1
                               : prev - 1
                           );
+                          setTimeout(() => setIsTransitioning(false), 500);
                         }}
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                         aria-label="이전 이미지"
@@ -213,11 +235,14 @@ export default function ProductDetailPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (isTransitioning) return;
+                          setIsTransitioning(true);
                           setSelectedImageIndex((prev) =>
                             prev === productDetail.images.length - 1
                               ? 0
                               : prev + 1
                           );
+                          setTimeout(() => setIsTransitioning(false), 500);
                         }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                         aria-label="다음 이미지"
@@ -251,8 +276,13 @@ export default function ProductDetailPage() {
                 {productDetail.images.map((image, index) => (
                   <button
                     key={image.imageId}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square border rounded-lg overflow-hidden ${
+                    onClick={() => {
+                      if (isTransitioning) return;
+                      setIsTransitioning(true);
+                      setSelectedImageIndex(index);
+                      setTimeout(() => setIsTransitioning(false), 500);
+                    }}
+                    className={`aspect-square border rounded-lg overflow-hidden transition-all ${
                       selectedImageIndex === index
                         ? "border-black border-2"
                         : "border-gray-200 hover:border-gray-400"
