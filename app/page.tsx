@@ -66,11 +66,7 @@ export default function Home() {
 
   const ProductCard = ({ product, image }: ProductCardProps) => {
     return (
-      <Link
-        key={product.productId}
-        href={`/products/${product.productId}`}
-        className="hover:underline"
-      >
+      <Link key={product.productId} href={`/products/${product.productId}`}>
         <div className="border border-black cursor-pointer hover:bg-black hover:text-white transition">
           <div className="aspect-square bg-gray-100 flex items-center justify-center">
             <div className="w-3/4 h-3/4 border border-gray-300 flex items-center justify-center">

@@ -161,7 +161,7 @@ export default function ProductDetailPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-sm hover:underline inline-flex items-center"
+            className="text-sm inline-flex items-center cursor-pointer"
           >
             ← 돌아가기
           </button>
