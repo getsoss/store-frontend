@@ -34,11 +34,11 @@ const Header = () => {
     window.location.reload();
   };
   return (
-    <header className="border-b border-black">
+    <header className="bg-black text-white">
       <div className="max-w-6xl mx-auto px-6 py-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold tracking-tight">
-            STORE
+            AVAD STORE
           </Link>
           <div className="flex items-center space-x-8">
             <Link href="/products" className="text-sm hover:underline">

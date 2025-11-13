@@ -170,15 +170,74 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* 이미지 섹션 */}
           <div className="space-y-4">
-            <div className="aspect-square bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+            <div className="relative aspect-square bg-gray-50 border border-gray-200 rounded-lg overflow-hidden group">
               {productDetail?.images && productDetail.images.length > 0 ? (
-                <Image
-                  src={productDetail.images[selectedImageIndex].imageUrl}
-                  alt={productDetail.product?.name ?? ""}
-                  width={600}
-                  height={600}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <Image
+                    src={productDetail.images[selectedImageIndex].imageUrl}
+                    alt={productDetail.product?.name ?? ""}
+                    width={600}
+                    height={600}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* 왼쪽/오른쪽 이동 버튼 - 이미지가 2개 이상일 때만 표시 */}
+                  {productDetail.images.length > 1 && (
+                    <>
+                      {/* 왼쪽 버튼 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImageIndex((prev) =>
+                            prev === 0
+                              ? productDetail.images.length - 1
+                              : prev - 1
+                          );
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                        aria-label="이전 이미지"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="w-6 h-6"
+                        >
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
+                      {/* 오른쪽 버튼 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImageIndex((prev) =>
+                            prev === productDetail.images.length - 1
+                              ? 0
+                              : prev + 1
+                          );
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                        aria-label="다음 이미지"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="w-6 h-6"
+                        >
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
                   이미지 없음
