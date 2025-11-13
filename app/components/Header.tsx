@@ -41,10 +41,6 @@ const Header = () => {
             AVAD STORE
           </Link>
           <div className="flex items-center space-x-8">
-            <Link href="/products" className="text-sm hover:underline">
-              PRODUCTS
-            </Link>
-
             {isLoggedIn ? (
               <div className="flex space-x-8">
                 {isAdmin && (
