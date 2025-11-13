@@ -26,7 +26,8 @@ interface ProductDetail {
     isMain: boolean;
   }[];
   likeCount: number;
-  isLiked?: boolean;
+  isLiked: boolean;
+  isWished: boolean;
 }
 
 export default function ProductDetailPage() {
@@ -35,6 +36,7 @@ export default function ProductDetailPage() {
   const [productDetail, setProductDetail] = useState<ProductDetail>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [wished, setWished] = useState(false);
 
   const fetchProductDetail = async (productId: number) => {
     try {
@@ -60,10 +62,12 @@ export default function ProductDetailPage() {
         images: data.images,
         likeCount: data.likeCount,
         isLiked: data.isLiked,
+        isWished: data.isWished,
       });
 
-      // 좋아요 상태 초기화
+      // 좋아요, 찜 상태 초기화
       setLiked(data.isLiked || false);
+      setWished(data.isWished || false);
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
     }
@@ -106,6 +110,39 @@ export default function ProductDetailPage() {
           isLiked: nextLiked,
         });
       }
+    } catch (error: any) {
+      console.error("좋아요 처리 오류:", error);
+      alert("좋아요 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleWishToggle = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+        return;
+      }
+
+      const productId = Number(params.productId);
+      const method = wished ? "DELETE" : "POST";
+      const res = await fetch(`/api/products/${productId}/wish`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "좋아요 처리에 실패했습니다.");
+        return;
+      }
+
+      // 찜 상태 토글
+      const nextWished = !wished;
+      setWished(nextWished);
     } catch (error: any) {
       console.error("좋아요 처리 오류:", error);
       alert("좋아요 처리 중 오류가 발생했습니다.");
@@ -225,8 +262,33 @@ export default function ProductDetailPage() {
               <button className="w-full py-4 bg-black text-white hover:bg-gray-800 transition-colors text-sm uppercase tracking-wide">
                 장바구니에 추가
               </button>
-              <button className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide">
-                찜하기
+              <button
+                onClick={handleWishToggle}
+                className={`group flex items-center justify-center gap-2 w-full py-4 border transition-all duration-300 text-sm uppercase tracking-wide ${
+                  wished
+                    ? "border-yellow-500 bg-yellow-50 hover:bg-yellow-100 text-yellow-700"
+                    : "border-black hover:bg-black hover:text-white"
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill={wished ? "#eab308" : "none"}
+                  stroke={wished ? "#eab308" : "currentColor"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`w-5 h-5 transition-all duration-300 ${
+                    wished
+                      ? "text-yellow-600 scale-110"
+                      : "text-current group-hover:text-white"
+                  }`}
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+                <span className={wished ? "text-yellow-700 font-medium" : ""}>
+                  {wished ? "찜상품" : "찜하기"}
+                </span>
               </button>
               <button className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide">
                 바로 구매

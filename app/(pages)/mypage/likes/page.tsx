@@ -3,13 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/app/components/Header";
-import { useParams } from "next/navigation";
 
 export default function LikesPage() {
-  const params = useParams();
-  const memberEncoded = params.member as string;
-  const encodedMember = memberEncoded || "";
-
   const dummyLikes = [
     {
       productId: 101,
@@ -43,7 +38,7 @@ export default function LikesPage() {
       <main className="max-w-5xl mx-auto px-6 py-16">
         <div className="mb-6">
           <Link
-            href={`/members/${encodedMember}`}
+            href="/mypage"
             className="text-sm hover:underline inline-flex items-center"
           >
             ← 마이페이지로

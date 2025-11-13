@@ -3,7 +3,6 @@
 import Header from "@/app/components/Header";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 
 interface Member {
   memberId?: number;
@@ -16,10 +15,47 @@ interface Member {
   updatedAt?: string;
 }
 
-export default function MemberPage() {
-  const params = useParams();
-  const memberEncoded = params.member as string;
-  const member = memberEncoded ? decodeURIComponent(memberEncoded) : "";
+const summaryItems = [
+  {
+    title: "찜 내역",
+    description: "관심 있는 상품들을 한 번에 확인해요.",
+    countLabel: "찜한 상품",
+    href: "/mypage/wishlist",
+  },
+  {
+    title: "좋아요 내역",
+    description: "좋아요한 리뷰와 콘텐츠를 모아봐요.",
+    countLabel: "좋아요",
+    href: "/mypage/likes",
+  },
+  {
+    title: "장바구니",
+    description: "담아둔 상품을 확인하고 주문을 진행하세요.",
+    countLabel: "담긴 상품",
+    href: "/cart",
+  },
+  {
+    title: "주문 내역",
+    description: "최근 주문 현황과 배송 상태를 확인해요.",
+    countLabel: "주문 건수",
+    href: "/mypage/orders",
+  },
+];
+
+const recentActivity = [
+  {
+    title: "최근 본 상품",
+    description: "마지막으로 살펴본 상품을 다시 확인해보세요.",
+    href: "/mypage/recent",
+  },
+  {
+    title: "문의 내역",
+    description: "상품/주문 관련 문의 현황을 확인할 수 있어요.",
+    href: "/mypage/inquiries",
+  },
+];
+
+export default function MyPage() {
   const [memberInfo, setMemberInfo] = useState<Member | null>(null);
 
   const formatDate = (isoString?: string) => {
@@ -40,10 +76,14 @@ export default function MemberPage() {
     }
   }
 
-  const fetchMemberDetail = async (memberEmail: string) => {
+  const fetchMemberDetail = async () => {
     try {
-      const encodedEmail = encodeURIComponent(memberEmail);
-      const res = await fetch(`/api/members/${encodedEmail}`);
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`/api/members`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) {
         const text = await res.text();
         console.error(text || "서버 요청 실패");
@@ -57,60 +97,8 @@ export default function MemberPage() {
   };
 
   useEffect(() => {
-    if (member) {
-      fetchMemberDetail(member);
-    } else {
-      const token = localStorage.getItem("authToken");
-      const payload = parseJwt(token);
-      if (payload?.sub) {
-        fetchMemberDetail(payload.sub);
-      }
-    }
-  }, [member]);
-
-  const memberEmail = member || memberInfo?.email || "";
-  const encodedMemberEmail = memberEmail ? encodeURIComponent(memberEmail) : "";
-
-  const summaryItems = [
-    {
-      title: "찜 내역",
-      description: "관심 있는 상품들을 한 번에 확인해요.",
-      countLabel: "찜한 상품",
-      href: `/members/${encodedMemberEmail}/wishlist`,
-    },
-    {
-      title: "좋아요 내역",
-      description: "좋아요한 리뷰와 콘텐츠를 모아봐요.",
-      countLabel: "좋아요",
-      href: `/members/${encodedMemberEmail}/likes`,
-    },
-    {
-      title: "장바구니",
-      description: "담아둔 상품을 확인하고 주문을 진행하세요.",
-      countLabel: "담긴 상품",
-      href: "/cart",
-    },
-    {
-      title: "주문 내역",
-      description: "최근 주문 현황과 배송 상태를 확인해요.",
-      countLabel: "주문 건수",
-      href: `/members/${encodedMemberEmail}/orders`,
-    },
-  ];
-
-  const recentActivity = [
-    {
-      title: "최근 본 상품",
-      description: "마지막으로 살펴본 상품을 다시 확인해보세요.",
-      href: `/members/${encodedMemberEmail}/recent`,
-    },
-    {
-      title: "문의 내역",
-      description: "상품/주문 관련 문의 현황을 확인할 수 있어요.",
-      href: `/members/${encodedMemberEmail}/inquiries`,
-    },
-  ];
-
+    fetchMemberDetail();
+  }, []);
   return (
     <div>
       <Header />

@@ -18,7 +18,7 @@ export async function POST(
 
     // 백엔드 API 호출
     const res = await fetch(
-      `http://localhost:8080/api/products/${productId}/like`,
+      `http://localhost:8080/api/products/${productId}/wish`,
       {
         method: "POST",
         headers: {
@@ -66,7 +66,7 @@ export async function DELETE(
     }
 
     const res = await fetch(
-      `http://localhost:8080/api/products/${productId}/like`,
+      `http://localhost:8080/api/products/${productId}/wish`,
       {
         method: "DELETE",
         headers: {

@@ -4,8 +4,20 @@ import Link from "next/link";
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [memberEmail, setMemberEmail] = useState<string | null>(null);
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const payload = token ? parseJwt(token) : null;
 
+    if (payload && payload.exp * 1000 > Date.now()) {
+      setIsLoggedIn(true);
+      const role = (payload as any)?.role;
+      setIsAdmin(role === "admin");
+    } else {
+      localStorage.removeItem("authToken");
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+    }
+  }, []);
   function parseJwt(token: string | null) {
     if (!token) return null;
     try {
@@ -16,28 +28,9 @@ const Header = () => {
       return null;
     }
   }
-
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const payload = token ? parseJwt(token) : null;
-
-    if (payload && payload.exp * 1000 > Date.now()) {
-      setIsLoggedIn(true);
-      const role = (payload as any)?.role;
-      setIsAdmin(role === "admin");
-      setMemberEmail(payload.sub || null);
-    } else {
-      localStorage.removeItem("authToken");
-      setIsLoggedIn(false);
-      setIsAdmin(false);
-      setMemberEmail(null);
-    }
-  }, []);
-
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     setIsLoggedIn(false);
-    setMemberEmail(null);
     window.location.reload();
   };
   return (
@@ -62,14 +55,9 @@ const Header = () => {
                     UPLOAD
                   </Link>
                 )}
-                {memberEmail && (
-                  <Link
-                    href={`/members/${encodeURIComponent(memberEmail)}`}
-                    className="text-sm hover:underline"
-                  >
-                    MYPAGE
-                  </Link>
-                )}
+                <Link href="/mypage" className="text-sm hover:underline">
+                  MYPAGE
+                </Link>
                 <a className="text-sm hover:underline" onClick={handleLogout}>
                   LOGOUT
                 </a>
