@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import { Product, ProductImage } from "./types/dto";
+import Slider from "react-slick";
+import Carousel from "./components/Carousel";
 
 interface ProductCardProps {
   product: Product;
@@ -83,7 +85,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="max-w-6xl mx-auto px-6 py-16">
+      <Carousel></Carousel>
+      <main className="max-w-6xl mx-auto px-6">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
@@ -96,7 +99,7 @@ export default function Home() {
                 <ProductCard
                   key={product.productId}
                   product={product}
-                  image={image}
+                  image={image ?? null}
                 />
               );
             })
