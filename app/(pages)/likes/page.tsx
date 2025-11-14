@@ -81,6 +81,18 @@ export default function LikesPage() {
                       이미지 없음
                     </div>
                   )}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="#ef4444"
+                    stroke="#ef4444"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="absolute top-2 right-2 w-6 h-6 transition-all duration-300 text-red-500 scale-110 z-20"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm font-medium text-neutral-900 line-clamp-1">
@@ -89,9 +101,6 @@ export default function LikesPage() {
                   <p className="mt-1 text-sm text-neutral-700">
                     {item.product.price.toLocaleString()}원
                   </p>
-                  <span className="mt-2 inline-flex text-xs text-neutral-500">
-                    ♥ 좋아요
-                  </span>
                 </div>
               </Link>
             ))}
