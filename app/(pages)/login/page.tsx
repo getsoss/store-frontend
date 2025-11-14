@@ -68,6 +68,13 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 mt-10">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="mb-4 text-sm text-gray-500 hover:text-black transition"
+      >
+        ← 돌아가기
+      </button>
       <h1 className="text-2xl font-bold mb-4">로그인</h1>
       <form onSubmit={onSubmit} className="grid gap-3">
         <label className="grid gap-1">

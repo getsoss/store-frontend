@@ -18,7 +18,7 @@ function Carousel() {
   };
   return (
     // slider-container에 너비, 중앙 정렬, 패딩 추가
-    <div className="slider-container w-full">
+    <div className="slider-container w-full py-[40px]">
       <Slider {...settings}>
         <div className="w-[500px] h-[500px]">
           {/* 슬라이드 내용에 배경, 텍스트 스타일 적용 */}
