@@ -4,29 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
+import { Product, ProductImage } from "./types/dto";
+
 interface ProductCardProps {
   product: Product;
-  image: Image | null;
-}
-
-interface Product {
-  productId: number;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: number;
-}
-
-interface Image {
-  imageId: number;
-  productId: number;
-  imageUrl: string;
-  isMain: boolean;
+  image: ProductImage | null;
 }
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
-  const [images, setImages] = useState<Image[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [images, setImages] = useState<ProductImage[]>([]);
   const fetchProducts = async () => {
     try {
       const res = await fetch("/api/products");
@@ -35,7 +22,7 @@ export default function Home() {
         console.error(text || "서버 요청 실패");
         return;
       }
-      const data = await res.json();
+      const data: Product[] = await res.json();
       setProducts(data);
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
@@ -50,9 +37,9 @@ export default function Home() {
         return;
       }
 
-      const data = await res.json();
+      const data: ProductImage[] = await res.json();
       const onlyMainImages = data.filter(
-        (image: Image) => image.isMain === true
+        (image: ProductImage) => image.isMain === true
       );
       setImages(onlyMainImages);
     } catch (error: any) {
@@ -103,7 +90,7 @@ export default function Home() {
             products.map((product: Product) => {
               const image = images.find(
                 (img) => img.productId === product.productId
-              ) as Image;
+              ) as ProductImage | undefined;
 
               return (
                 <ProductCard

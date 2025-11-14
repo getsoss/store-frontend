@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { SignupRequestDTO } from "@/app/types/dto";
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -82,18 +83,20 @@ export default function SignupPage() {
     }
     setLoading(true);
     try {
+      const signupData: SignupRequestDTO = {
+        email: form.email,
+        name: form.name,
+        phone: form.phone.replace(/-/g, ""),
+        address: `${form.address}${
+          form.addressDetail ? ` ${form.addressDetail}` : ""
+        }`.trim(),
+        password: form.password,
+      };
+
       const res = await fetch("/api/members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          name: form.name,
-          phone: form.phone.replace(/-/g, ""),
-          address: `${form.address}${
-            form.addressDetail ? ` ${form.addressDetail}` : ""
-          }`.trim(),
-          password: form.password,
-        }),
+        body: JSON.stringify(signupData),
       });
 
       const data = await res.json();

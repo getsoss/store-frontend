@@ -5,38 +5,86 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
+import {
+  loadTossPayments,
+  TossPaymentsWidgets,
+} from "@tosspayments/tosspayments-sdk";
+import { Cart, CartItemWithProduct } from "@/app/types/dto";
 
-interface CartItem {
-  cartId: number;
-  memberId: number;
-  productId: number;
-  quantity: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Product {
-  productId: number;
-  name: string;
-  price: number;
-  description: string;
-}
-
-interface ProductImage {
-  imageId: number;
-  imageUrl: string;
-  isMain: boolean;
-}
-
-interface CartItemWithProduct extends CartItem {
-  product?: Product;
-  image?: ProductImage;
-}
+const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+const customerKey = process.env.NEXT_PUBLIC_TOSS_CUSTOMER_KEY;
 
 export default function CartPage() {
+  const [amount, setAmount] = useState({
+    currency: "KRW",
+    value: 5_000,
+  });
+  const [ready, setReady] = useState(false); // 결제 준비 상태
+  const [widgets, setWidgets] = useState<TossPaymentsWidgets | null>(null); // 결제 위젯
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPaymentWidgets() {
+      // ------  결제위젯 초기화 ------
+      if (!clientKey || !customerKey) {
+        console.error("clientKey와 customerKey가 모두 필요합니다.");
+        return;
+      }
+      const tossPayments = await loadTossPayments(clientKey);
+      // 회원 결제
+      const paymentWidgets = tossPayments.widgets({
+        customerKey,
+      });
+
+      setWidgets(paymentWidgets);
+    }
+
+    fetchPaymentWidgets();
+  }, [clientKey, customerKey]);
+
+  useEffect(() => {
+    async function renderPaymentWidgets() {
+      if (widgets == null) {
+        return;
+      }
+
+      if (
+        !document.getElementById("payment-method") ||
+        !document.getElementById("agreement")
+      ) {
+        return;
+      }
+      // ------ 주문의 결제 금액 설정 -----
+      await widgets.setAmount(amount);
+
+      await Promise.all([
+        // ------  결제 UI 렌더링 ------
+        widgets.renderPaymentMethods({
+          selector: "#payment-method",
+          variantKey: "DEFAULT",
+        }),
+        // ------  이용약관 UI 렌더링 ------
+        widgets.renderAgreement({
+          selector: "#agreement",
+          variantKey: "AGREEMENT",
+        }),
+      ]);
+
+      setReady(true);
+    }
+
+    renderPaymentWidgets();
+  }, [widgets, loading]);
+
+  useEffect(() => {
+    if (widgets == null) {
+      return;
+    }
+
+    widgets.setAmount(amount);
+  }, [widgets, amount]);
 
   const fetchCartItems = async () => {
     try {
@@ -62,7 +110,7 @@ export default function CartPage() {
         return;
       }
 
-      const items: CartItem[] = await res.json();
+      const items: Cart[] = await res.json();
 
       // 각 장바구니 항목의 상품 정보 가져오기
       const itemsWithProducts = await Promise.all(
@@ -140,8 +188,10 @@ export default function CartPage() {
   }, []);
 
   const totalPrice = cartItems.reduce((sum, item) => {
-    return sum + (item.product?.price || 0) * item.quantity;
+    return sum + (item.product?.price ?? 0) * item.quantity;
   }, 0);
+
+  widgets?.setAmount?.({ value: totalPrice, currency: "KRW" });
 
   if (loading) {
     return (
@@ -254,9 +304,36 @@ export default function CartPage() {
                     <span>{totalPrice.toLocaleString()}원</span>
                   </div>
                 </div>
-                <button className="w-full py-3 bg-black text-white hover:bg-gray-800 transition-colors">
+                <button
+                  disabled={!ready}
+                  className="w-full py-3 bg-black text-white hover:bg-gray-800 transition-colors"
+                  onClick={async () => {
+                    try {
+                      await widgets?.requestPayment({
+                        orderId: "igaQ17Pee5034bTFrx9YC",
+                        orderName: "토스 티셔츠 외 2건",
+                        successUrl: window.location.origin + "/success",
+                        failUrl: window.location.origin + "/fail",
+                        customerEmail: "customer123@gmail.com",
+                        customerName: "김토스",
+                        customerMobilePhone: "01012341234",
+                      });
+                    } catch (error) {
+                      // 에러 처리하기
+                      console.error(error);
+                    }
+                  }}
+                >
                   주문하기
                 </button>
+              </div>
+              <div className="wrapper">
+                <div className="box_section">
+                  {/* 결제 UI */}
+                  <div id="payment-method" />
+                  {/* 이용약관 UI */}
+                  <div id="agreement" />
+                </div>
               </div>
             </div>
           </div>

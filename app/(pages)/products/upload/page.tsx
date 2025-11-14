@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Category } from "@/app/types/dto";
 
 function parseJwt(token: string | null) {
   if (!token) return null;
@@ -13,11 +14,6 @@ function parseJwt(token: string | null) {
   } catch (e) {
     return null;
   }
-}
-
-interface Category {
-  categoryId: number;
-  name: string;
 }
 interface ImagePreview {
   file: File;
@@ -34,7 +30,7 @@ interface ProductForm {
 export default function ProductUploadPage() {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [formData, setFormData] = useState<ProductForm>({
     name: "",

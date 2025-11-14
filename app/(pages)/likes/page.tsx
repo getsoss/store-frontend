@@ -3,34 +3,37 @@
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/app/components/Header";
+import { useEffect, useState } from "react";
+import { ProductLikeResponseDTO } from "@/app/types/dto";
 
 export default function LikesPage() {
-  const dummyLikes = [
-    {
-      productId: 101,
-      name: "미니멀 블랙 코트",
-      price: 159000,
-      imageUrl: "/uploads/images/41737382-4239-4caf-93a7-3828ca56cf4f.jpg",
-    },
-    {
-      productId: 102,
-      name: "화이트 러닝 스니커즈",
-      price: 89000,
-      imageUrl: "/uploads/images/f0de1424-66c2-42fb-9cc6-97f6d2da8325.jpg",
-    },
-    {
-      productId: 103,
-      name: "데일리 크로스백",
-      price: 59000,
-      imageUrl: "/uploads/images/556dc9e4-8bb2-49a2-a26b-5506414a7e0f.jpg",
-    },
-    {
-      productId: 104,
-      name: "라이트 블루 데님",
-      price: 69000,
-      imageUrl: "/uploads/images/83b86b4e-981c-4522-9956-16820480ebf1.jpg",
-    },
-  ];
+  const [likedProducts, setLikedProducts] = useState<ProductLikeResponseDTO[]>(
+    []
+  );
+  useEffect(() => {
+    fetchLikeProduct();
+  }, []);
+
+  const fetchLikeProduct = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const headers: HeadersInit = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch("/api/likes", { headers });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(text || "서버 요청 실패");
+        return;
+      }
+      const data: ProductLikeResponseDTO[] = await res.json();
+      setLikedProducts(data);
+    } catch (error: any) {
+      console.error(error?.message || "서버 요청 실패");
+    }
+  };
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -52,36 +55,48 @@ export default function LikesPage() {
           좋아요한 상품을 모아볼 수 있어요.
         </p>
 
-        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {dummyLikes.map((item) => (
-            <Link
-              key={item.productId}
-              href={`/products/${item.productId}`}
-              className="group rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-sm transition hover:-translate-y-1 hover:shadow-md hover:border-neutral-900"
-            >
-              <div className="aspect-square bg-neutral-50 relative">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  fill
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-sm font-medium text-neutral-900 line-clamp-1">
-                  {item.name}
-                </h3>
-                <p className="mt-1 text-sm text-neutral-700">
-                  {item.price.toLocaleString()}원
-                </p>
-                <span className="mt-2 inline-flex text-xs text-neutral-500">
-                  ♥ 좋아요
-                </span>
-              </div>
-            </Link>
-          ))}
-        </section>
+        {likedProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-500 mb-4">좋아요한 상품이 없습니다.</p>
+          </div>
+        ) : (
+          <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {likedProducts.map((item) => (
+              <Link
+                key={item.product.productId}
+                href={`/products/${item.product.productId}`}
+                className="group rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-sm transition hover:-translate-y-1 hover:shadow-md hover:border-neutral-900"
+              >
+                <div className="aspect-square bg-neutral-50 relative">
+                  {item.productImage ? (
+                    <Image
+                      src={item.productImage.imageUrl}
+                      alt={item.product.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      이미지 없음
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-medium text-neutral-900 line-clamp-1">
+                    {item.product.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-neutral-700">
+                    {item.product.price.toLocaleString()}원
+                  </p>
+                  <span className="mt-2 inline-flex text-xs text-neutral-500">
+                    ♥ 좋아요
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </section>
+        )}
       </main>
     </div>
   );

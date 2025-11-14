@@ -3,17 +3,7 @@
 import Header from "@/app/components/Header";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-interface Member {
-  memberId?: number;
-  email: string;
-  name: string;
-  phone?: string;
-  address?: string;
-  role?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { Member } from "@/app/types/dto";
 
 const summaryItems = [
   {

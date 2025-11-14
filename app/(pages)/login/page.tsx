@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LoginRequestDTO, LoginResponseDTO } from "@/app/types/dto";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<LoginRequestDTO>({
     email: "",
     password: "",
   });
@@ -39,18 +40,14 @@ export default function LoginPage() {
         }),
       });
 
-      const data = await res.json();
+      const data: LoginResponseDTO = await res.json();
 
       if (!res.ok) {
-        throw new Error(data?.error || "로그인 실패");
+        throw new Error((data as any)?.error || "로그인 실패");
       }
 
       try {
-        const payload = {
-          email: form.email,
-          accessToken: data?.accessToken ?? "",
-        };
-        localStorage.setItem("authToken", payload.accessToken);
+        localStorage.setItem("authToken", data.accessToken);
       } catch {}
 
       router.push("/");

@@ -7,34 +7,12 @@ import { useParams } from "next/navigation";
 import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
 import Toast from "@/app/components/Toast";
-
-interface ProductDetail {
-  product: {
-    productId: number;
-    name: string;
-    description: string;
-    price: number;
-    categoryName: string;
-  };
-  category: {
-    categoryId: string;
-    name: string;
-    parent_category_id: number;
-  };
-  images: {
-    imageId: number;
-    imageUrl: string;
-    isMain: boolean;
-  }[];
-  likeCount: number;
-  isLiked: boolean;
-  isWished: boolean;
-}
+import { ProductResponseDTO } from "@/app/types/dto";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [productDetail, setProductDetail] = useState<ProductDetail>();
+  const [productDetail, setProductDetail] = useState<ProductResponseDTO>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
   const [wished, setWished] = useState(false);
