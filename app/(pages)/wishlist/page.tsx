@@ -7,14 +7,14 @@ import { useEffect, useState } from "react";
 import { ProductSummaryDTO } from "@/app/types/dto";
 import { useRouter } from "next/navigation";
 
-export default function LikesPage() {
+export default function WishListPage() {
   const router = useRouter();
   const [likedProducts, setLikedProducts] = useState<ProductSummaryDTO[]>([]);
   useEffect(() => {
-    fetchLikeProduct();
+    fetchWishlistProduct();
   }, []);
 
-  const fetchLikeProduct = async () => {
+  const fetchWishlistProduct = async () => {
     try {
       const token = localStorage.getItem("authToken");
       const headers: HeadersInit = {};
@@ -25,7 +25,7 @@ export default function LikesPage() {
         router.push("/login");
         return;
       }
-      const res = await fetch("/api/likes", { headers });
+      const res = await fetch("/api/wishlist", { headers });
 
       if (!res.ok) {
         const text = await res.text();
@@ -53,15 +53,15 @@ export default function LikesPage() {
         </div>
 
         <h1 className="text-2xl font-semibold text-neutral-900 mb-2">
-          내 좋아요
+          내 찜상품
         </h1>
         <p className="text-sm text-neutral-500 mb-10">
-          좋아요한 상품을 모아볼 수 있어요.
+          찜한 상품을 모아볼 수 있어요.
         </p>
 
         {likedProducts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500 mb-4">좋아요한 상품이 없습니다.</p>
+            <p className="text-gray-500 mb-4">찜한 상품이 없습니다.</p>
           </div>
         ) : (
           <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -88,14 +88,14 @@ export default function LikesPage() {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    fill="#ef4444"
-                    stroke="#ef4444"
+                    fill="#eab308"
+                    stroke="#eab308"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="absolute top-2 right-2 w-6 h-6 transition-all duration-300 text-red-500 scale-110 z-20"
+                    className="top-2 right-2 absolute -5 h-5 transition-all duration-300 text-yellow-600 scale-110"
                   >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                   </svg>
                 </div>
                 <div className="p-4">

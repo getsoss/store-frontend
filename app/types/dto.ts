@@ -72,7 +72,7 @@ export interface ProductResponseDTO {
   isWished: boolean;
 }
 
-export interface ProductLikeResponseDTO {
+export interface ProductSummaryDTO {
   product: Product;
   productImage: ProductImage;
 }

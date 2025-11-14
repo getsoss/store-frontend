@@ -4,6 +4,7 @@ import Header from "@/app/components/Header";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Member } from "@/app/types/dto";
+import { useRouter } from "next/navigation";
 
 const summaryItems = [
   {
@@ -46,6 +47,7 @@ const recentActivity = [
 ];
 
 export default function MyPage() {
+  const router = useRouter();
   const [memberInfo, setMemberInfo] = useState<Member | null>(null);
 
   const formatDate = (isoString?: string) => {
@@ -69,6 +71,11 @@ export default function MyPage() {
   const fetchMemberDetail = async () => {
     try {
       const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("로그인이 필요합니다");
+        router.push("/login");
+        return;
+      }
       const res = await fetch(`/api/members`, {
         headers: {
           Authorization: `Bearer ${token}`,
