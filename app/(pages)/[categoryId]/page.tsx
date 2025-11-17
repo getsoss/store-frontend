@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Header from "../..//components/Header";
-import { Product, ProductImage } from "../..//types/dto";
+import Header from "../../components/Header";
+import { Product, ProductImage, ProductSummaryDTO } from "../../types/dto";
 import Carousel from "../../components/Carousel";
+import { useParams } from "next/navigation";
 
 interface ProductCardProps {
   product: Product;
@@ -13,43 +14,27 @@ interface ProductCardProps {
 }
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [images, setImages] = useState<ProductImage[]>([]);
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch("/api/products");
-      if (!res.ok) {
-        const text = await res.text();
-        console.error(text || "서버 요청 실패");
-        return;
-      }
-      const data: Product[] = await res.json();
-      setProducts(data);
-    } catch (error: any) {
-      console.error(error?.message || "서버 요청 실패");
-    }
-  };
-  const fetchProductsImages = async () => {
-    try {
-      const res = await fetch("/api/products/images");
-      if (!res.ok) {
-        const text = await res.text();
-        console.error(text || "서버 요청 실패");
-        return;
-      }
+  const params = useParams();
+  const [productSummary, setProductSummary] = useState<ProductSummaryDTO[]>([]);
 
-      const data: ProductImage[] = await res.json();
-      const onlyMainImages = data.filter(
-        (image: ProductImage) => image.isMain === true
-      );
-      setImages(onlyMainImages);
+  const fetchProductWithImage = async (categoryId: number) => {
+    try {
+      const res = await fetch(`/api/categories/${categoryId}/products`);
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(text || "서버 요청 실패");
+        return;
+      }
+      const data = await res.json();
+      setProductSummary(data);
+      console.log(data);
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
     }
   };
+
   useEffect(() => {
-    fetchProducts();
-    fetchProductsImages();
+    fetchProductWithImage(Number(params.categoryId));
   }, []);
 
   const ProductCard = ({ product, image }: ProductCardProps) => {
@@ -88,16 +73,13 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-6">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {products.length > 0 ? (
-            products.map((product: Product) => {
-              const image = images.find(
-                (img) => img.productId === product.productId
-              ) as ProductImage | undefined;
-
+          {productSummary.length > 0 ? (
+            productSummary.map((productSummary: ProductSummaryDTO) => {
+              const image = productSummary.productImage;
               return (
                 <ProductCard
-                  key={product.productId}
-                  product={product}
+                  key={productSummary.product.productId}
+                  product={productSummary.product}
                   image={image ?? null}
                 />
               );

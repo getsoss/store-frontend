@@ -63,7 +63,11 @@ const Header = () => {
           <div className="flex items-center space-x-8">
             {categories.length > 0 ? (
               categories.map((category, key) => {
-                return <span key={key}>{category.name.toUpperCase()}</span>;
+                return (
+                  <Link href={`/${category.categoryId}`} key={key}>
+                    {category.name.toUpperCase()}
+                  </Link>
+                );
               })
             ) : (
               <span>카테고리가 없습니다.</span>
