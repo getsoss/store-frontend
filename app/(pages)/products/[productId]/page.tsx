@@ -174,7 +174,7 @@ export default function ProductDetailPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-6 py-16">
+      <main className="max-w-6xl mx-auto px-6 py-20">
         <div className="mb-6">
           <button
             type="button"

@@ -103,7 +103,7 @@ export default function MyPage() {
         <header className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex flex-1 flex-col gap-1">
-              <h1 className="text-2xl font-semibold text-neutral-900">
+              <h1 className="text-2xl font-semibold text-neutral-900 py-5">
                 {memberInfo?.name}님, 안녕하세요!
               </h1>
               <p className="text-sm text-neutral-500">

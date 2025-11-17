@@ -42,7 +42,7 @@ export default function WishListPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="max-w-5xl mx-auto px-6 py-16">
+      <main className="max-w-5xl mx-auto px-6 py-20">
         <div className="mb-6">
           <Link
             href="/mypage"

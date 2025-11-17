@@ -208,7 +208,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-6 py-16">
+      <main className="max-w-6xl mx-auto px-6 py-20">
         <h1 className="text-3xl font-light mb-8">장바구니</h1>
 
         {cartItems.length === 0 ? (
