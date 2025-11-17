@@ -1,12 +1,32 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Category } from "../types/dto";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories");
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(text || "서버 요청 실패");
+        return;
+      }
+      const data: Category[] = await res.json();
+      setCategories(data);
+      console.log(data);
+    } catch (error: any) {
+      console.error(error?.message || "서버 요청 실패");
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const payload = token ? parseJwt(token) : null;
+    fetchCategories();
 
     if (payload && payload.exp * 1000 > Date.now()) {
       setIsLoggedIn(true);
@@ -40,6 +60,15 @@ const Header = () => {
           <Link href="/" className="text-2xl font-bold tracking-tight">
             AVAD STORE
           </Link>
+          <div className="flex items-center space-x-8">
+            {categories.length > 0 ? (
+              categories.map((category, key) => {
+                return <span key={key}>{category.name.toUpperCase()}</span>;
+              })
+            ) : (
+              <span>카테고리가 없습니다.</span>
+            )}
+          </div>
           <div className="flex items-center space-x-8">
             {isLoggedIn ? (
               <div className="flex space-x-8">

@@ -1,10 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Header from "./components/Header";
-import { Product, ProductImage } from "./types/dto";
-import Carousel from "./components/Carousel";
+import Header from "../..//components/Header";
+import { Product, ProductImage } from "../..//types/dto";
+import Carousel from "../../components/Carousel";
 
 interface ProductCardProps {
   product: Product;
