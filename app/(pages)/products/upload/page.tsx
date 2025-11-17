@@ -103,7 +103,7 @@ export default function ProductUploadPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/products/upload");
+      const res = await fetch("/api/categories");
       if (!res.ok) {
         const text = await res.text();
         console.error(text || "서버 요청 실패");
