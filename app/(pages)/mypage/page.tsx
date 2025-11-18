@@ -33,19 +33,6 @@ const summaryItems = [
   },
 ];
 
-const recentActivity = [
-  {
-    title: "최근 본 상품",
-    description: "마지막으로 살펴본 상품을 다시 확인해보세요.",
-    href: "/mypage/recent",
-  },
-  {
-    title: "문의 내역",
-    description: "상품/주문 관련 문의 현황을 확인할 수 있어요.",
-    href: "/mypage/inquiries",
-  },
-];
-
 export default function MyPage() {
   const router = useRouter();
   const [memberInfo, setMemberInfo] = useState<Member | null>(null);
@@ -100,7 +87,7 @@ export default function MyPage() {
     <div>
       <Header />
       <main className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10">
-        <header className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white px-6 py-8 shadow-sm">
+        <header className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white px-6 py-8 shadow-sm mt-10">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex flex-1 flex-col gap-1">
               <h1 className="text-2xl font-semibold text-neutral-900 py-5">
@@ -152,31 +139,6 @@ export default function MyPage() {
               </span>
             </Link>
           ))}
-        </section>
-
-        <section className="gap-4 md:grid-cols-[2fr_3fr]">
-          <article className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <header className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                활동 바로가기
-              </h2>
-            </header>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {recentActivity.map((item) => (
-                <Link
-                  key={item.title}
-                  href={item.href}
-                  className="flex flex-col gap-1 rounded-lg border border-neutral-100 bg-neutral-50 px-4 py-3 text-left text-sm transition hover:border-neutral-900 hover:bg-white"
-                >
-                  <span className="font-medium text-neutral-800">
-                    {item.title}
-                  </span>
-                  <span className="text-neutral-500">{item.description}</span>
-                </Link>
-              ))}
-            </div>
-          </article>
         </section>
 
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
