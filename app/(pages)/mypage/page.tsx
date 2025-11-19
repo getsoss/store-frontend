@@ -29,7 +29,7 @@ const summaryItems = [
     title: "주문 내역",
     description: "최근 주문 현황과 배송 상태를 확인해요.",
     countLabel: "주문 건수",
-    href: "/mypage/orders",
+    href: "/orders",
   },
 ];
 
@@ -57,7 +57,7 @@ export default function MyPage() {
 
   const fetchMemberDetail = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         alert("로그인이 필요합니다");
         router.push("/login");

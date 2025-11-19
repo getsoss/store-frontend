@@ -24,7 +24,7 @@ const Header = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("accessToken");
     const payload = token ? parseJwt(token) : null;
     fetchCategories();
 
@@ -48,10 +48,31 @@ const Header = () => {
       return null;
     }
   }
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
+  const handleLogout = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      try {
+        const res = await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (!res.ok) {
+          const error = await res.text();
+          console.error("로그아웃 실패:", error);
+        }
+      } catch (error: any) {
+        console.error("서버 오류:", error?.message || error);
+      }
+    }
+
+    // 로컬에서 토큰 제거
+    localStorage.removeItem("accessToken");
     setIsLoggedIn(false);
-    window.location.reload();
+    setIsAdmin(false);
+    window.location.href = "/";
   };
   return (
     <header className="bg-black text-white fixed w-full z-100">

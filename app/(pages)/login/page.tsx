@@ -47,7 +47,7 @@ export default function LoginPage() {
       }
 
       try {
-        localStorage.setItem("authToken", data.accessToken);
+        localStorage.setItem("accessToken", data.accessToken);
       } catch {}
 
       router.push("/");

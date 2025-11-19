@@ -56,7 +56,7 @@ export default function ProductDetailPage() {
   };
   const handleLikeToggle = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         alert("로그인이 필요합니다.");
         router.push("/login");
@@ -100,7 +100,7 @@ export default function ProductDetailPage() {
 
   const handleWishToggle = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         alert("로그인이 필요합니다.");
         router.push("/login");
@@ -133,7 +133,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         alert("로그인이 필요합니다.");
         router.push("/login");
@@ -141,7 +141,7 @@ export default function ProductDetailPage() {
       }
 
       const productId = Number(params.productId);
-      const res = await fetch("/api/carts", {
+      const res = await fetch("/api/mypage/carts", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

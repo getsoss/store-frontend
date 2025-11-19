@@ -25,7 +25,7 @@ export default function WishListPage() {
         router.push("/login");
         return;
       }
-      const res = await fetch("/api/wishlist", { headers });
+      const res = await fetch("/api/mypage/wishlist", { headers });
 
       if (!res.ok) {
         const text = await res.text();

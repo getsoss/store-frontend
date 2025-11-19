@@ -88,13 +88,13 @@ export default function CartPage() {
 
   const fetchCartItems = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         router.push("/login");
         return;
       }
 
-      const res = await fetch("/api/carts", {
+      const res = await fetch("/api/mypage/carts", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -146,7 +146,7 @@ export default function CartPage() {
     }
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         router.push("/login");
         return;
@@ -159,7 +159,7 @@ export default function CartPage() {
         return;
       }
 
-      const res = await fetch("/api/carts", {
+      const res = await fetch("/api/mypage/carts", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -205,7 +205,7 @@ export default function CartPage() {
   }
 
   const handlePayment = async () => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       alert("로그인이 필요합니다.");
       router.push("/login");

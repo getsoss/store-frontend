@@ -18,7 +18,7 @@ export default function KakaoCallbackPage() {
 
     if (token) {
       // 토큰을 localStorage에 저장
-      localStorage.setItem("authToken", token);
+      localStorage.setItem("accessToken", token);
       router.push("/");
     } else {
       // 토큰이 없으면 API route로 리다이렉트 (카카오에서 받은 code 처리)
