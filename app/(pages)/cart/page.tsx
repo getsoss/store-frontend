@@ -205,43 +205,79 @@ export default function CartPage() {
   }
 
   const handlePayment = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("로그인이 필요합니다.");
-        router.push("/login");
-        return;
+      // 1️⃣ 기존 주문 조회
+      const getRes = await fetch("/api/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const existingOrder = getRes.ok ? await getRes.json() : null;
+
+      let orderId: string;
+
+      // 2️⃣ 기존 주문이 존재하고 결제대기 상태인 경우
+      if (existingOrder && existingOrder.status === "결제대기") {
+        const isSameItems = (orderItems: any[], cartItems: any[]) => {
+          if (!orderItems) return false;
+          if (orderItems.length !== cartItems.length) return false;
+          return orderItems.every((oi) => {
+            const match = cartItems.find((ci) => ci.productId === oi.productId);
+            return (
+              match &&
+              match.quantity === oi.quantity &&
+              match.price === oi.price
+            );
+          });
+        };
+
+        if (isSameItems(existingOrder.items, cartItems)) {
+          orderId = existingOrder.orderId; // 동일 → 그대로 사용
+        } else {
+          // 3️⃣ 장바구니 다르면 PATCH 요청
+          const patchRes = await fetch(`/api/orders/${existingOrder.orderId}`, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              items: cartItems.map((i) => ({
+                productId: i.productId,
+                quantity: i.quantity,
+                price: i.product?.price || 0,
+              })),
+            }),
+          });
+          const patchData = patchRes.ok ? await patchRes.json() : null;
+          orderId = patchData?.orderId ?? existingOrder.orderId;
+        }
+      } else {
+        // 4️⃣ 기존 주문 없으면 신규 생성
+        const postRes = await fetch("/api/orders", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            items: cartItems.map((i) => ({
+              productId: i.productId,
+              quantity: i.quantity,
+              price: i.product?.price || 0,
+            })),
+          }),
+        });
+        const postData = await postRes.json();
+        orderId = postData.orderId;
       }
 
-      // 1️⃣ OrderRequestDTO 구성
-      const orderRequest: OrderRequestDTO = {
-        items: cartItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.product?.price || 0,
-        })),
-      };
-
-      // 2️⃣ 주문 생성 요청
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderRequest),
-      });
-
-      const data = await res.json();
-
-      // message 안에 JSON 문자열로 오는 경우
-      const orderData =
-        typeof data.message === "string" ? JSON.parse(data.message) : data;
-
-      const orderId = orderData.orderId;
-      console.log(orderId); // 이제 정상 출력
-
-      // 3️⃣ Toss Payments 결제 실행
+      // 5️⃣ Toss 결제 실행
       await widgets?.requestPayment({
         orderId: orderId.toString(),
         orderName: "스토어 상품 결제",
@@ -251,7 +287,7 @@ export default function CartPage() {
         customerName: "김토스",
         customerMobilePhone: "01012341234",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("결제 처리 오류:", error);
       alert("결제 처리 중 문제가 발생했습니다.");
     }
