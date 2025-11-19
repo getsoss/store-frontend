@@ -83,3 +83,13 @@ export interface CartItemWithProduct extends Cart {
 }
 
 export interface ProductDetail extends ProductResponseDTO {}
+
+export interface OrderRequestDTO {
+  items: OrderItemDTO[]; // 주문 항목 리스트
+}
+
+export interface OrderItemDTO {
+  productId: number; // 상품 ID
+  quantity: number; // 수량
+  price: number; // 상품 가격
+}

@@ -9,7 +9,7 @@ import {
   loadTossPayments,
   TossPaymentsWidgets,
 } from "@tosspayments/tosspayments-sdk";
-import { Cart, CartItemWithProduct } from "@/app/types/dto";
+import { Cart, CartItemWithProduct, OrderRequestDTO } from "@/app/types/dto";
 
 const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
 const customerKey = process.env.NEXT_PUBLIC_TOSS_CUSTOMER_KEY;
@@ -204,6 +204,59 @@ export default function CartPage() {
     );
   }
 
+  const handlePayment = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+        return;
+      }
+
+      // 1️⃣ OrderRequestDTO 구성
+      const orderRequest: OrderRequestDTO = {
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.product?.price || 0,
+        })),
+      };
+
+      // 2️⃣ 주문 생성 요청
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderRequest),
+      });
+
+      const data = await res.json();
+
+      // message 안에 JSON 문자열로 오는 경우
+      const orderData =
+        typeof data.message === "string" ? JSON.parse(data.message) : data;
+
+      const orderId = orderData.orderId;
+      console.log(orderId); // 이제 정상 출력
+
+      // 3️⃣ Toss Payments 결제 실행
+      await widgets?.requestPayment({
+        orderId: orderId.toString(),
+        orderName: "스토어 상품 결제",
+        successUrl: window.location.origin + "/success",
+        failUrl: window.location.origin + "/fail",
+        customerEmail: "customer123@gmail.com",
+        customerName: "김토스",
+        customerMobilePhone: "01012341234",
+      });
+    } catch (error) {
+      console.error("결제 처리 오류:", error);
+      alert("결제 처리 중 문제가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -307,22 +360,7 @@ export default function CartPage() {
                 <button
                   disabled={!ready}
                   className="w-full py-3 bg-black text-white hover:bg-gray-800 transition-colors"
-                  onClick={async () => {
-                    try {
-                      await widgets?.requestPayment({
-                        orderId: "igaQ17Pee5034bTFrx9YC",
-                        orderName: "토스 티셔츠 외 2건",
-                        successUrl: window.location.origin + "/success",
-                        failUrl: window.location.origin + "/fail",
-                        customerEmail: "customer123@gmail.com",
-                        customerName: "김토스",
-                        customerMobilePhone: "01012341234",
-                      });
-                    } catch (error) {
-                      // 에러 처리하기
-                      console.error(error);
-                    }
-                  }}
+                  onClick={handlePayment}
                 >
                   주문하기
                 </button>
