@@ -11,7 +11,7 @@ export default function SuccessPage() {
   useEffect(() => {
     const paymentKey = params.get("paymentKey");
     const orderId = params.get("orderId");
-    const amount = params.get("amount");
+    const amount = Number(params.get("amount"));
 
     (async () => {
       const res = await fetch("/api/confirm", {
