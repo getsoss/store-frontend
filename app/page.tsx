@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import { Product, ProductImage } from "./types/dto";
 import Carousel from "./components/Carousel";
+import SearchBar from "./components/SearchBar";
 
 interface ProductCardProps {
   product: Product;
@@ -83,6 +84,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <SearchBar />
       <Carousel></Carousel>
       <main className="max-w-6xl mx-auto px-6">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
