@@ -16,7 +16,7 @@ export default function WishListPage() {
 
   const fetchWishlistProduct = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       const headers: HeadersInit = {};
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;

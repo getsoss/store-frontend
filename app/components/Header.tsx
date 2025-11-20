@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Category } from "../types/dto";
@@ -25,7 +27,7 @@ const Header = () => {
     fetchCategories();
 
     (async () => {
-      const status = await checkLoginStatus();
+      const status = await checkLoginStatus(); // accessToken 자동 refresh 처리 포함
       setIsLoggedIn(status.isLoggedIn);
       setIsAdmin(status.isAdmin);
     })();
@@ -34,26 +36,25 @@ const Header = () => {
   // 로그아웃
   const handleLogout = async () => {
     const accessToken = localStorage.getItem("accessToken");
-    if (accessToken) {
-      try {
-        const res = await fetch("/api/auth/logout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (!res.ok) console.error(await res.text());
-      } catch (e: any) {
-        console.error(e?.message || "서버 오류");
-      }
-    }
 
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    window.location.href = "/";
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+        },
+        credentials: "include", // 쿠키 포함
+      });
+    } catch (e: any) {
+      console.error(e?.message || "서버 오류");
+    } finally {
+      // 로컬스토리지 정리
+      localStorage.removeItem("accessToken");
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+      window.location.href = "/";
+    }
   };
 
   // 초기 상태 확인 전에는 렌더링하지 않음
@@ -98,9 +99,12 @@ const Header = () => {
                 <Link href="/mypage" className="text-sm hover:underline">
                   MYPAGE
                 </Link>
-                <a className="text-sm hover:underline" onClick={handleLogout}>
+                <button
+                  className="text-sm hover:underline"
+                  onClick={handleLogout}
+                >
                   LOGOUT
-                </a>
+                </button>
               </div>
             ) : (
               <div className="flex space-x-8">

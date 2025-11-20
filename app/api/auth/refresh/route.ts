@@ -1,22 +1,23 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { refreshToken } = await request.json();
+    // 클라이언트가 body에 담지 않으므로 쿠키에서 가져오기
+    const refreshToken = request.cookies.get("refreshToken")?.value;
 
     if (!refreshToken) {
       return NextResponse.json(
         { error: "리프레시 토큰이 필요합니다." },
-        { status: 400 }
+        { status: 401 }
       );
     }
 
-    const backendUrl = "http://localhost:8080/api/auth/refresh";
-
-    const res = await fetch(backendUrl, {
+    const res = await fetch("http://localhost:8080/api/auth/refresh", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `refreshToken=${refreshToken}`, // 쿠키 전달
+      },
     });
 
     if (!res.ok) {

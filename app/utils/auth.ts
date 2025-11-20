@@ -1,5 +1,8 @@
 // utils/auth.ts
 
+/**
+ * JWT 토큰 파싱
+ */
 export function parseJwt(token: string | null) {
   if (!token) return null;
   try {
@@ -10,31 +13,66 @@ export function parseJwt(token: string | null) {
   }
 }
 
-// refreshToken으로 새 accessToken 발급
+/**
+ * Refresh Token 쿠키를 이용해 새 Access Token 발급
+ */
 export async function requestNewAccessToken(): Promise<string | null> {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) return null;
-
   try {
     const res = await fetch("/api/auth/refresh", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
+      credentials: "include", // 쿠키 자동 포함, 클라이언트가 refreshToken을 직접 읽지 않음
     });
 
     if (!res.ok) return null;
 
-    const data = await res.json();
-    const newAccessToken = data.accessToken;
-    localStorage.setItem("accessToken", newAccessToken);
-    return newAccessToken;
+    const data: { accessToken: string } = await res.json();
+    if (data.accessToken) localStorage.setItem("accessToken", data.accessToken);
+    return data.accessToken;
   } catch (e) {
     console.error("AccessToken refresh 실패:", e);
     return null;
   }
 }
 
-// 로그인 상태 확인
+/**
+ * API 호출 시 Access Token 자동 갱신 유틸
+ */
+export async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response | null> {
+  const accessToken = localStorage.getItem("accessToken");
+
+  // headers 안전하게 생성
+  const headers: HeadersInit = new Headers(options.headers);
+  if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+
+  let res = await fetch(url, { ...options, headers, credentials: "include" });
+
+  if (res.status === 401) {
+    // Access Token 만료 → refresh 시도
+    const newAccessToken = await requestNewAccessToken();
+    if (!newAccessToken) {
+      localStorage.removeItem("accessToken");
+      return null; // 로그인 필요
+    }
+
+    // 재요청
+    const newHeaders: HeadersInit = new Headers(options.headers);
+    newHeaders.set("Authorization", `Bearer ${newAccessToken}`);
+    res = await fetch(url, {
+      ...options,
+      headers: newHeaders,
+      credentials: "include",
+    });
+  }
+
+  return res;
+}
+
+/**
+ * 로그인 상태 확인
+ */
 export async function checkLoginStatus(): Promise<{
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -42,7 +80,6 @@ export async function checkLoginStatus(): Promise<{
   let accessToken = localStorage.getItem("accessToken");
   let payload = parseJwt(accessToken);
 
-  // accessToken 만료 또는 없음 → refresh 시도
   if (!payload || payload.exp * 1000 <= Date.now()) {
     const newAccessToken = await requestNewAccessToken();
     if (!newAccessToken) return { isLoggedIn: false, isAdmin: false };

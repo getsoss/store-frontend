@@ -38,6 +38,7 @@ export default function LoginPage() {
           email: form.email,
           password: form.password,
         }),
+        credentials: "include", // 쿠키 수신
       });
 
       const data: LoginResponseDTO = await res.json();
@@ -46,9 +47,9 @@ export default function LoginPage() {
         throw new Error((data as any)?.error || "로그인 실패");
       }
 
+      // 이제 accessToken만 localStorage에 저장
       try {
         localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
       } catch {}
 
       router.push("/");

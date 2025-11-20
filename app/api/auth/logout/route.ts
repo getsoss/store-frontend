@@ -6,10 +6,7 @@ export async function POST(request: NextRequest) {
       .get("authorization")
       ?.replace("Bearer ", "");
     if (!accessToken) {
-      return NextResponse.json(
-        { error: "토큰이 필요합니다." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "토큰 필요" }, { status: 400 });
     }
 
     const res = await fetch("http://localhost:8080/api/auth/logout", {
@@ -18,20 +15,21 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
+      credentials: "include", // 쿠키 포함
     });
 
     if (!res.ok) {
-      const errorData = await res.text();
+      const text = await res.text();
       return NextResponse.json(
-        { error: errorData || "로그아웃 요청에 실패했습니다." },
+        { error: text || "로그아웃 실패" },
         { status: res.status }
       );
     }
 
-    return NextResponse.json({ message: "로그아웃 성공" }, { status: 200 });
-  } catch (error: any) {
+    return NextResponse.json({ message: "로그아웃 성공" });
+  } catch (e: any) {
     return NextResponse.json(
-      { error: error?.message || "서버 오류가 발생했습니다." },
+      { error: e.message || "서버 오류" },
       { status: 500 }
     );
   }
