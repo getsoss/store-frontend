@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
@@ -348,12 +347,6 @@ export default function ProductDetailPage() {
                 </h2>
                 <dl className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-gray-500">카테고리</dt>
-                    <dd className="font-medium">
-                      {productDetail?.category?.name}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
                     <dt className="text-gray-500">가격</dt>
                     <dd className="font-medium">
                       {productDetail?.product?.price.toLocaleString()}원
@@ -521,14 +514,6 @@ export default function ProductDetailPage() {
       <footer className="border-t border-black mt-32">
         <div className="max-w-6xl mx-auto px-6 py-12 flex justify-between items-center text-sm">
           <p className="font-light">&copy; 2025 AVAD STORE</p>
-          <div className="flex space-x-6">
-            <Link href="/about" className="hover:underline">
-              ABOUT
-            </Link>
-            <Link href="/contact" className="hover:underline">
-              CONTACT
-            </Link>
-          </div>
         </div>
       </footer>
     </div>
