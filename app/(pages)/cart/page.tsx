@@ -297,8 +297,19 @@ export default function CartPage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-6 py-20">
-        <h1 className="text-3xl font-light mb-8">장바구니</h1>
+      <main className="max-w-5xl mx-auto px-6 py-20">
+        <div className="mb-6">
+          <Link
+            href="/mypage"
+            className="text-sm hover:underline inline-flex items-center"
+          >
+            ← 마이페이지로
+          </Link>
+        </div>
+
+        <h1 className="text-2xl font-semibold text-neutral-900 mb-2">
+          장바구니
+        </h1>
 
         {cartItems.length === 0 ? (
           <div className="text-center py-16">

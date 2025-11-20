@@ -45,7 +45,7 @@ export default function ProductUploadPage() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("accessToken");
     const payload = parseJwt(token);
     if (!payload || payload.exp * 1000 <= Date.now()) {
       alert("접근 권한이 없습니다.");

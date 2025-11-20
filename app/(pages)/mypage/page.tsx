@@ -97,12 +97,6 @@ export default function MyPage() {
                 프로필과 활동 내역을 확인하고 관리할 수 있는 공간입니다.
               </p>
             </div>
-            <button
-              type="button"
-              className="rounded-md border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
-            >
-              프로필 수정하기
-            </button>
           </div>
 
           <div className="flex flex-wrap gap-6 text-sm text-neutral-500">
@@ -139,38 +133,6 @@ export default function MyPage() {
               </span>
             </Link>
           ))}
-        </section>
-
-        <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <header className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-neutral-900">
-                주문 현황
-              </h2>
-              <p className="text-sm text-neutral-500">
-                최근 주문의 진행 상태를 한눈에 확인하세요.
-              </p>
-            </div>
-          </header>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-4">
-            {[
-              { label: "결제 완료", status: "0건" },
-              { label: "배송 준비중", status: "0건" },
-              { label: "배송중", status: "0건" },
-              { label: "배송 완료", status: "0건" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="rounded-lg border border-neutral-100 bg-neutral-50 px-4 py-5 text-center text-sm"
-              >
-                <span className="block text-neutral-500">{item.label}</span>
-                <span className="mt-2 block text-lg font-semibold text-neutral-900">
-                  {item.status}
-                </span>
-              </div>
-            ))}
-          </div>
         </section>
       </main>
     </div>

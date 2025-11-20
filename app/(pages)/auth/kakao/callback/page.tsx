@@ -22,7 +22,6 @@ export default function KakaoCallbackPage() {
       localStorage.setItem("refreshToken", refreshToken);
       router.push("/");
     } else {
-      // 기존 fallback: code가 있으면 API route 호출
       const code = searchParams.get("code");
       if (code) {
         window.location.href = `/api/auth/kakao/callback?code=${code}`;
@@ -33,9 +32,14 @@ export default function KakaoCallbackPage() {
   }, [router, searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-lg">카카오 로그인 처리 중...</p>
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+      <div className="max-w-md w-full rounded-2xl border border-neutral-200 bg-white p-8 shadow-md text-center">
+        <h1 className="text-2xl font-semibold mb-4 text-neutral-900">
+          카카오 로그인 처리 중...
+        </h1>
+        <p className="text-sm text-neutral-500">
+          잠시만 기다려주세요. 완료되면 자동으로 메인 페이지로 이동합니다.
+        </p>
       </div>
     </div>
   );

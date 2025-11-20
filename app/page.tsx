@@ -25,6 +25,7 @@ export default function Home() {
       }
       const data: Product[] = await res.json();
       setProducts(data);
+      console.log(data);
     } catch (error: any) {
       console.error(error?.message || "서버 요청 실패");
     }
@@ -85,7 +86,26 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Header />
       <SearchBar />
-      <Carousel></Carousel>
+      <Carousel
+        products={products
+          .filter((p) => p.categoryId === 5)
+          .map((p) => {
+            const img = images.find(
+              (i) => i.productId === p.productId && i.isMain
+            );
+            return img
+              ? {
+                  productId: p.productId,
+                  name: p.name,
+                  description: p.description,
+                  price: p.price,
+                  imageUrl: img.imageUrl,
+                }
+              : null;
+          })
+          .filter((p): p is NonNullable<typeof p> => p !== null)}
+      />
+
       <main className="max-w-6xl mx-auto px-6">
         <h1 className="text-4xl font-light mb-12 tracking-tight">PRODUCTS</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
