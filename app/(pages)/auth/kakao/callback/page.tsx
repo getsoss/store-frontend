@@ -8,7 +8,8 @@ export default function KakaoCallbackPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    const accessToken = searchParams.get("accessToken");
+    const refreshToken = searchParams.get("refreshToken");
     const error = searchParams.get("error");
 
     if (error) {
@@ -16,20 +17,17 @@ export default function KakaoCallbackPage() {
       return;
     }
 
-    if (token) {
-      // 토큰을 localStorage에 저장
-      localStorage.setItem("accessToken", token);
+    if (accessToken && refreshToken) {
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
       router.push("/");
     } else {
-      // 토큰이 없으면 API route로 리다이렉트 (카카오에서 받은 code 처리)
+      // 기존 fallback: code가 있으면 API route 호출
       const code = searchParams.get("code");
       if (code) {
-        // API route로 리다이렉트하여 백엔드 요청 처리
         window.location.href = `/api/auth/kakao/callback?code=${code}`;
       } else {
-        router.push(
-          `/login?error=${encodeURIComponent("인증 코드가 없습니다.")}`
-        );
+        router.push(`/login?error=${encodeURIComponent("토큰이 없습니다.")}`);
       }
     }
   }, [router, searchParams]);

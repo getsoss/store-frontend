@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await res.json();
-    const token = data?.accessToken;
+    const { accessToken, refreshToken } = data;
 
-    if (!token) {
+    if (!data) {
       return NextResponse.redirect(
         new URL(
           "/login?error=" + encodeURIComponent("토큰을 받지 못했습니다."),
@@ -57,7 +57,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.redirect(
       new URL(
-        `/auth/kakao/callback?token=${encodeURIComponent(token)}`,
+        `/auth/kakao/callback?accessToken=${encodeURIComponent(
+          accessToken
+        )}&refreshToken=${encodeURIComponent(refreshToken)}`,
         request.url
       )
     );

@@ -48,6 +48,7 @@ export default function LoginPage() {
 
       try {
         localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
       } catch {}
 
       router.push("/");

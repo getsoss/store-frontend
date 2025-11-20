@@ -1,53 +1,37 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Category } from "../types/dto";
+import { checkLoginStatus } from "../utils/auth";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
+  // 카테고리 로딩
   const fetchCategories = async () => {
     try {
       const res = await fetch("/api/categories");
-      if (!res.ok) {
-        const text = await res.text();
-        console.error(text || "서버 요청 실패");
-        return;
-      }
-      const data: Category[] = await res.json();
+      if (!res.ok) return console.error(await res.text());
+      const data = await res.json();
       setCategories(data);
-      console.log(data);
-    } catch (error: any) {
-      console.error(error?.message || "서버 요청 실패");
+    } catch (e: any) {
+      console.error(e?.message || "카테고리 로드 실패");
     }
   };
 
+  // 로그인 체크 + 카테고리 로드
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    const payload = token ? parseJwt(token) : null;
     fetchCategories();
 
-    if (payload && payload.exp * 1000 > Date.now()) {
-      setIsLoggedIn(true);
-      const role = (payload as any)?.role;
-      setIsAdmin(role === "admin");
-    } else {
-      localStorage.removeItem("authToken");
-      setIsLoggedIn(false);
-      setIsAdmin(false);
-    }
+    (async () => {
+      const status = await checkLoginStatus();
+      setIsLoggedIn(status.isLoggedIn);
+      setIsAdmin(status.isAdmin);
+    })();
   }, []);
-  function parseJwt(token: string | null) {
-    if (!token) return null;
-    try {
-      const base64Payload = token.split(".")[1];
-      const payload = JSON.parse(atob(base64Payload));
-      return payload;
-    } catch (e) {
-      return null;
-    }
-  }
+
+  // 로그아웃
   const handleLogout = async () => {
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
@@ -59,21 +43,22 @@ const Header = () => {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        if (!res.ok) {
-          const error = await res.text();
-          console.error("로그아웃 실패:", error);
-        }
-      } catch (error: any) {
-        console.error("서버 오류:", error?.message || error);
+        if (!res.ok) console.error(await res.text());
+      } catch (e: any) {
+        console.error(e?.message || "서버 오류");
       }
     }
 
-    // 로컬에서 토큰 제거
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     setIsLoggedIn(false);
     setIsAdmin(false);
     window.location.href = "/";
   };
+
+  // 초기 상태 확인 전에는 렌더링하지 않음
+  if (isLoggedIn === null) return null;
+
   return (
     <header className="bg-black text-white fixed w-full z-100">
       <div className="max-w-6xl mx-auto px-6 py-3">
@@ -81,19 +66,24 @@ const Header = () => {
           <Link href="/" className="text-2xl font-bold tracking-tight">
             AVAD STORE
           </Link>
+
+          {/* 카테고리 */}
           <div className="flex items-center space-x-8">
             {categories.length > 0 ? (
-              categories.map((category, key) => {
-                return (
-                  <Link href={`/${category.categoryId}`} key={key}>
-                    {category.name.toUpperCase()}
-                  </Link>
-                );
-              })
+              categories.map((category) => (
+                <Link
+                  href={`/${category.categoryId}`}
+                  key={category.categoryId}
+                >
+                  {category.name.toUpperCase()}
+                </Link>
+              ))
             ) : (
               <span>카테고리가 없습니다.</span>
             )}
           </div>
+
+          {/* 로그인/로그아웃 */}
           <div className="flex items-center space-x-8">
             {isLoggedIn ? (
               <div className="flex space-x-8">

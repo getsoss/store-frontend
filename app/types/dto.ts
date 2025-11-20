@@ -61,6 +61,7 @@ export interface SignupRequestDTO {
 
 export interface LoginResponseDTO {
   accessToken: string;
+  refreshToken: string;
 }
 
 export interface ProductResponseDTO {
