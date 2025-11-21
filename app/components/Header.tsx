@@ -64,9 +64,9 @@ const Header = () => {
     <header className="bg-black text-white fixed w-full z-100">
       <div className="max-w-6xl mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold tracking-tight">
+          <a href="/" className="text-2xl font-bold tracking-tight">
             AVAD STORE
-          </Link>
+          </a>
 
           {/* 카테고리 */}
           <div className="flex items-center space-x-8">

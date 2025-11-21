@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const res = await fetch("http://localhost:8080/api/products");
-    if (!res.ok) {
-      const text = await res.text();
-      return NextResponse.json(
-        { error: text || "서버 요청 실패" },
-        { status: res.status }
-      );
-    }
+    const { searchParams } = new URL(req.url);
+    const page = searchParams.get("page") || "0";
+    const size = searchParams.get("size") || "12";
+
+    const res = await fetch(
+      `http://localhost:8080/api/products?page=${page}&size=${size}`
+    );
+
     const data = await res.json();
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
