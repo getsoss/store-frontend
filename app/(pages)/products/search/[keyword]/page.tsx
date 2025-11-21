@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import SearchBar from "@/app/components/SearchBar";
-import { Product, ProductImage, ProductSummaryDTO } from "@/app/types/dto";
+import { ProductSummaryDTO, ProductImage, Product } from "@/app/types/dto";
 
 interface ProductCardProps {
   product: Product;
@@ -13,16 +13,19 @@ interface ProductCardProps {
 }
 
 export default function SearchResultsPage() {
-  const params = useParams(); // { keyword: string }
-  const searchParams = useSearchParams(); // ?page=0&size=20
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const keyword = params.keyword;
-  let page = parseInt(searchParams.get("page") || "0", 10);
-  let size = parseInt(searchParams.get("size") || "20", 10);
+  let page = parseInt(searchParams.get("page") || "0");
+  let size = parseInt(searchParams.get("size") || "12");
 
   if (isNaN(page)) page = 0;
-  if (isNaN(size)) size = 20;
+  if (isNaN(size)) size = 12;
 
   const [products, setProducts] = useState<ProductSummaryDTO[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
 
   const fetchSearchResults = async () => {
     try {
@@ -40,6 +43,7 @@ export default function SearchResultsPage() {
 
       const data = await res.json();
       setProducts(data.products || []);
+      setTotalPages(Math.ceil((data.total || 0) / size));
     } catch (error: any) {
       console.error(error?.message || "검색 요청 실패");
     }
@@ -74,6 +78,10 @@ export default function SearchResultsPage() {
     </Link>
   );
 
+  const handlePageChange = (newPage: number) => {
+    router.push(`/products/search/${keyword}?page=${newPage}&size=${size}`);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -84,16 +92,43 @@ export default function SearchResultsPage() {
           {typeof keyword === "string" ? decodeURIComponent(keyword) : ""}"
         </h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-          {products.length > 0
-            ? products.map(({ product, productImage }) => (
-                <ProductCard
-                  key={product.productId}
-                  product={product}
-                  image={productImage ?? null}
-                />
-              ))
-            : null}
+          {products.length > 0 ? (
+            products.map(({ product, productImage }) => (
+              <ProductCard
+                key={product.productId}
+                product={product}
+                image={productImage ?? null}
+              />
+            ))
+          ) : (
+            <p className="col-span-3 text-center">검색 결과가 없습니다.</p>
+          )}
         </div>
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className="flex justify-center space-x-4 mt-8">
+            <button
+              disabled={page === 0}
+              className="px-4 py-2 border rounded disabled:opacity-50"
+              onClick={() => handlePageChange(page - 1)}
+            >
+              이전
+            </button>
+
+            <span className="px-4 py-2">
+              {page + 1} / {totalPages}
+            </span>
+
+            <button
+              disabled={page + 1 >= totalPages}
+              className="px-4 py-2 border rounded disabled:opacity-50"
+              onClick={() => handlePageChange(page + 1)}
+            >
+              다음
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

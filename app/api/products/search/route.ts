@@ -5,8 +5,8 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const query = url.searchParams.get("query") || "";
-    const page = parseInt(url.searchParams.get("page") || "0", 10);
-    const size = parseInt(url.searchParams.get("size") || "20", 10);
+    const page = parseInt(url.searchParams.get("page") || "0");
+    const size = parseInt(url.searchParams.get("size") || "12");
 
     const backendUrl = `http://localhost:8080/api/products/search?query=${encodeURIComponent(
       query

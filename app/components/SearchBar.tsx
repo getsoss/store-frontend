@@ -11,7 +11,7 @@ export default function SearchBar() {
     if (!query.trim()) return;
     setLoading(true);
     // 동적 라우팅: [keyword] 페이지로 이동
-    router.push(`/products/search/${encodeURIComponent(query)}?page=0&size=20`);
+    router.push(`/products/search/${encodeURIComponent(query)}?page=0&size=12`);
     setLoading(false);
   };
 
