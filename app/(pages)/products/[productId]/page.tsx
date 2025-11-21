@@ -3,14 +3,15 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import Header from "@/app/components/Header";
 import { useRouter } from "next/navigation";
+import Header from "@/app/components/Header";
 import Toast from "@/app/components/Toast";
-import { ProductResponseDTO } from "@/app/types/dto";
+import { ProductResponseDTO, ProductSummaryDTO } from "@/app/types/dto";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
+
   const [productDetail, setProductDetail] = useState<ProductResponseDTO>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -18,21 +19,21 @@ export default function ProductDetailPage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [relatedProducts, setRelatedProducts] = useState<ProductSummaryDTO[]>(
+    []
+  );
 
+  // 상품 상세 fetch
   const fetchProductDetail = async (productId: number) => {
     try {
       const token = localStorage.getItem("accessToken");
       const headers: HeadersInit = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const res = await fetch(`/api/products/${productId}`, {
-        headers,
-      });
+      const res = await fetch(`/api/products/${productId}`, { headers });
       if (!res.ok) {
         const text = await res.text();
-        console.error(text || "서버 요청 실패");
+        console.error(text || "상품 상세 fetch 실패");
         return;
       }
 
@@ -45,14 +46,32 @@ export default function ProductDetailPage() {
         isLiked: data.isLiked,
         isWished: data.isWished,
       });
-
-      // 좋아요, 찜 상태 초기화
       setLiked(data.isLiked || false);
       setWished(data.isWished || false);
     } catch (error: any) {
-      console.error(error?.message || "서버 요청 실패");
+      console.error(error?.message || "상품 상세 fetch 오류");
     }
   };
+
+  // 관련상품 fetch
+  const fetchRelatedProducts = async (productId: number) => {
+    try {
+      const res = await fetch(`/api/products/${productId}/related`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setRelatedProducts(data);
+    } catch (e) {
+      console.error("관련상품 fetch 오류:", e);
+    }
+  };
+
+  useEffect(() => {
+    const id = Number(params.productId);
+    fetchProductDetail(id);
+    fetchRelatedProducts(id);
+  }, [params.productId]);
+
+  // 좋아요 토글
   const handleLikeToggle = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -66,22 +85,18 @@ export default function ProductDetailPage() {
       const method = liked ? "DELETE" : "POST";
       const res = await fetch(`/api/products/${productId}/like`, {
         method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "좋아요 처리에 실패했습니다.");
+        alert(data.error || "좋아요 처리 실패");
         return;
       }
 
-      // 좋아요 상태 토글
       const nextLiked = !liked;
       setLiked(nextLiked);
 
-      // 좋아요 개수 업데이트
       if (productDetail) {
         setProductDetail({
           ...productDetail,
@@ -92,11 +107,12 @@ export default function ProductDetailPage() {
         });
       }
     } catch (error: any) {
-      console.error("좋아요 처리 오류:", error);
-      alert("좋아요 처리 중 오류가 발생했습니다.");
+      console.error("좋아요 오류:", error);
+      alert("좋아요 처리 중 오류 발생");
     }
   };
 
+  // 찜 토글
   const handleWishToggle = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -110,26 +126,23 @@ export default function ProductDetailPage() {
       const method = wished ? "DELETE" : "POST";
       const res = await fetch(`/api/products/${productId}/wish`, {
         method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "좋아요 처리에 실패했습니다.");
+        alert(data.error || "찜 처리 실패");
         return;
       }
 
-      // 찜 상태 토글
-      const nextWished = !wished;
-      setWished(nextWished);
+      setWished(!wished);
     } catch (error: any) {
-      console.error("좋아요 처리 오류:", error);
-      alert("좋아요 처리 중 오류가 발생했습니다.");
+      console.error("찜 오류:", error);
+      alert("찜 처리 중 오류 발생");
     }
   };
 
+  // 장바구니 추가
   const handleAddToCart = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -146,29 +159,23 @@ export default function ProductDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          productId: productId,
-          quantity: quantity,
-        }),
+        body: JSON.stringify({ productId, quantity }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "장바구니 추가에 실패했습니다.");
+        alert(data.error || "장바구니 추가 실패");
         return;
       }
 
-      // 토스트 메시지 표시
       setShowToast(true);
     } catch (error: any) {
-      console.error("장바구니 추가 오류:", error);
-      alert("장바구니 추가 중 오류가 발생했습니다.");
+      console.error("장바구니 오류:", error);
+      alert("장바구니 처리 중 오류 발생");
     }
   };
-  useEffect(() => {
-    fetchProductDetail(Number(params.productId));
-  }, [params.productId]);
 
+  // 바로 구매
   const handleBuyNow = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -179,31 +186,25 @@ export default function ProductDetailPage() {
       }
 
       const productId = Number(params.productId);
-
       const res = await fetch("/api/mypage/carts/buy-now", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          productId,
-          quantity,
-        }),
+        body: JSON.stringify({ productId, quantity }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "바로 구매 처리 실패");
+        alert(data.error || "바로 구매 실패");
         return;
       }
 
-      // 장바구니에 바로 구매 상품만 들어간 상태
-      // CartPage로 이동해서 결제 진행
       router.push("/cart");
     } catch (error) {
       console.error("바로 구매 오류:", error);
-      alert("바로 구매 처리 중 오류가 발생했습니다.");
+      alert("바로 구매 처리 중 오류 발생");
     }
   };
 
@@ -212,6 +213,7 @@ export default function ProductDetailPage() {
       <Header />
 
       <main className="max-w-6xl mx-auto px-6 py-20">
+        {/* 돌아가기 버튼 */}
         <div className="mb-6">
           <button
             type="button"
@@ -223,7 +225,7 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* 이미지 섹션 */}
+          {/* 이미지 캐러셀 */}
           <div className="space-y-4">
             <div className="relative aspect-square bg-gray-50 border border-gray-200 rounded-lg overflow-hidden group">
               {productDetail?.images && productDetail.images.length > 0 ? (
@@ -253,10 +255,10 @@ export default function ProductDetailPage() {
                       ))}
                     </div>
                   </div>
-                  {/* 왼쪽/오른쪽 이동 버튼 - 이미지가 2개 이상일 때만 표시 */}
+
+                  {/* 캐러셀 버튼 */}
                   {productDetail.images.length > 1 && (
                     <>
-                      {/* 왼쪽 버튼 */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -278,14 +280,10 @@ export default function ProductDetailPage() {
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-6 h-6"
                         >
                           <path d="M15 18l-6-6 6-6" />
                         </svg>
                       </button>
-                      {/* 오른쪽 버튼 */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -307,9 +305,6 @@ export default function ProductDetailPage() {
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-6 h-6"
                         >
                           <path d="M9 18l6-6-6-6" />
                         </svg>
@@ -370,6 +365,7 @@ export default function ProductDetailPage() {
                 </p>
               </div>
 
+              {/* 상품 설명 */}
               <div className="pt-6 border-t border-gray-200">
                 <h2 className="text-sm font-medium mb-3 uppercase tracking-wide">
                   상품 설명
@@ -379,6 +375,7 @@ export default function ProductDetailPage() {
                 </p>
               </div>
 
+              {/* 상품 정보 */}
               <div className="pt-6 border-t border-gray-200">
                 <h2 className="text-sm font-medium mb-3 uppercase tracking-wide">
                   상품 정보
@@ -394,14 +391,13 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* 수량 선택 및 총 가격 */}
+            {/* 수량 및 총 가격 */}
             <div className="pt-6 border-t border-gray-200">
               <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                    className="w-8 h-8 border border-gray-300 rounded bg-white hover:bg-gray-100 transition-colors flex items-center justify-center"
-                    aria-label="수량 감소"
+                    className="w-8 h-8 border border-gray-300 rounded bg-white hover:bg-gray-100 flex items-center justify-center"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -409,9 +405,6 @@ export default function ProductDetailPage() {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-4 h-4"
                     >
                       <path d="M5 12h14" />
                     </svg>
@@ -420,16 +413,14 @@ export default function ProductDetailPage() {
                     type="number"
                     min="1"
                     value={quantity}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 1;
-                      setQuantity(Math.max(1, value));
-                    }}
-                    className="w-16 h-8 text-center border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                    onChange={(e) =>
+                      setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                    }
+                    className="w-16 h-8 text-center border border-gray-300 rounded bg-white"
                   />
                   <button
                     onClick={() => setQuantity((prev) => prev + 1)}
-                    className="w-8 h-8 border border-gray-300 rounded bg-white hover:bg-gray-100 transition-colors flex items-center justify-center"
-                    aria-label="수량 증가"
+                    className="w-8 h-8 border border-gray-300 rounded bg-white hover:bg-gray-100 flex items-center justify-center"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -437,9 +428,6 @@ export default function ProductDetailPage() {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-4 h-4"
                     >
                       <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -448,11 +436,9 @@ export default function ProductDetailPage() {
                 <div className="text-right">
                   <p className="text-sm text-gray-500 mb-1">총 가격</p>
                   <p className="text-2xl font-medium">
-                    {productDetail?.product?.price
-                      ? (
-                          productDetail.product.price * quantity
-                        ).toLocaleString()
-                      : 0}
+                    {(
+                      (productDetail?.product?.price ?? 0) * quantity
+                    ).toLocaleString()}
                     원
                   </p>
                 </div>
@@ -496,8 +482,8 @@ export default function ProductDetailPage() {
                 </span>
               </button>
               <button
-                className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide"
                 onClick={handleBuyNow}
+                className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide"
               >
                 바로 구매
               </button>
@@ -525,22 +511,51 @@ export default function ProductDetailPage() {
                 >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
-                <span
-                  className={`text-xs mt-1 font-medium transition-colors ${
-                    liked
-                      ? "text-red-600"
-                      : "text-current group-hover:text-white"
-                  }`}
-                >
+                <span className="text-xs mt-1 font-medium">
                   {productDetail?.likeCount || 0}
                 </span>
               </button>
             </div>
           </div>
         </div>
+
+        {/* 관련상품 섹션 */}
+        {relatedProducts.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-xl font-medium mb-4">관련 상품</h2>
+            <div className="grid grid-cols-5 gap-4">
+              {relatedProducts.map((item) => (
+                <div
+                  key={item.product.productId}
+                  className="overflow-hidden p-2 flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() =>
+                    router.push(`/products/${item.product.productId}`)
+                  }
+                >
+                  {item.productImage ? (
+                    <Image
+                      src={item.productImage.imageUrl}
+                      alt={item.product.name}
+                      width={200}
+                      height={200}
+                      className="object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-gray-200 rounded flex items-center justify-center text-gray-500">
+                      이미지 없음
+                    </div>
+                  )}
+                  <p className="mt-2 text-sm">{item.product.name}</p>
+                  <p className="mt-1 font-medium">
+                    {item.product.price.toLocaleString()}원
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
-      {/* 토스트 메시지 */}
       {showToast && (
         <Toast
           message="장바구니에 상품을 담았습니다."
