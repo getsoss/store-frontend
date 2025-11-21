@@ -21,7 +21,7 @@ export default function ProductDetailPage() {
 
   const fetchProductDetail = async (productId: number) => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("accessToken");
       const headers: HeadersInit = {};
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
