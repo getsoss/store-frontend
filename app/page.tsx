@@ -36,8 +36,14 @@ export default function Home() {
     }
   };
 
+  // 페이지 변경 시 데이터 fetch
   useEffect(() => {
     fetchProducts(page);
+  }, [page]);
+
+  // 페이지 변경 시 최상단으로 스크롤
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
 
   const ProductCard = ({ product, image }: ProductCardProps) => (
