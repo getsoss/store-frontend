@@ -169,6 +169,44 @@ export default function ProductDetailPage() {
     fetchProductDetail(Number(params.productId));
   }, [params.productId]);
 
+  const handleBuyNow = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+        return;
+      }
+
+      const productId = Number(params.productId);
+
+      const res = await fetch("/api/mypage/carts/buy-now", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId,
+          quantity,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "바로 구매 처리 실패");
+        return;
+      }
+
+      // 장바구니에 바로 구매 상품만 들어간 상태
+      // CartPage로 이동해서 결제 진행
+      router.push("/cart");
+    } catch (error) {
+      console.error("바로 구매 오류:", error);
+      alert("바로 구매 처리 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -457,7 +495,10 @@ export default function ProductDetailPage() {
                   {wished ? "찜상품" : "찜하기"}
                 </span>
               </button>
-              <button className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide">
+              <button
+                className="w-full py-4 border border-black hover:bg-black hover:text-white transition-colors text-sm uppercase tracking-wide"
+                onClick={handleBuyNow}
+              >
                 바로 구매
               </button>
               <button
