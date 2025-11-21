@@ -13,38 +13,31 @@ export async function POST(request: NextRequest) {
     }
 
     const backendUrl = "http://localhost:8080/api/auth/oauth/kakao/token";
+
     const params = new URLSearchParams();
     params.append("code", code);
 
-    const res = await fetch(backendUrl, {
+    const backendRes = await fetch(backendUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
+      credentials: "include", // 중요!
     });
 
-    if (!res.ok) {
-      const errorData = await res
-        .json()
-        .catch(() => ({ error: "카카오 로그인 실패" }));
-      return NextResponse.json(
-        {
-          error:
-            errorData.error ||
-            errorData.message ||
-            "카카오 로그인 요청에 실패했습니다.",
-        },
-        { status: res.status }
-      );
+    const setCookie = backendRes.headers.get("set-cookie"); // ★★★ 핵심 ★★★
+
+    const responseJson = await backendRes.json();
+
+    const nextResponse = NextResponse.json(responseJson);
+
+    if (setCookie) {
+      nextResponse.headers.set("set-cookie", setCookie); // ★ 쿠키 전달 ★
     }
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: 200 });
+    return nextResponse;
   } catch (error: any) {
-    console.error("카카오 로그인 API 오류:", error);
     return NextResponse.json(
-      { error: error?.message || "서버 오류가 발생했습니다." },
+      { error: error?.message || "서버 오류" },
       { status: 500 }
     );
   }
