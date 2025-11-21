@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       value: "",
       path: "/", // 쿠키 경로
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false, // 개발환경이니까 fasle
       sameSite: "lax",
       maxAge: 0, // 즉시 만료
     });
