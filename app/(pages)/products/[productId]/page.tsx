@@ -153,7 +153,7 @@ export default function ProductDetailPage() {
       }
 
       const productId = Number(params.productId);
-      const res = await fetch("/api/mypage/carts", {
+      const res = await fetch("/api/me/carts", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -186,7 +186,7 @@ export default function ProductDetailPage() {
       }
 
       const productId = Number(params.productId);
-      const res = await fetch("/api/mypage/carts/buy-now", {
+      const res = await fetch("/api/me/carts/buy-now", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

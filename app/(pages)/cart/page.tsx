@@ -94,7 +94,7 @@ export default function CartPage() {
         return;
       }
 
-      const res = await fetch("/api/mypage/carts", {
+      const res = await fetch("/api/me/carts", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -159,7 +159,7 @@ export default function CartPage() {
         return;
       }
 
-      const res = await fetch("/api/mypage/carts", {
+      const res = await fetch("/api/me/carts", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -213,7 +213,6 @@ export default function CartPage() {
     }
 
     try {
-      // 1️⃣ 기존 주문 조회
       const getRes = await fetch("/api/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -221,7 +220,7 @@ export default function CartPage() {
 
       let orderId: string;
 
-      // 2️⃣ 기존 주문이 존재하고 결제대기 상태인 경우
+      // 기존 주문이 존재하고 결제대기 상태인 경우
       if (existingOrder && existingOrder.status === "결제대기") {
         const isSameItems = (orderItems: any[], cartItems: any[]) => {
           if (!orderItems) return false;
@@ -237,9 +236,9 @@ export default function CartPage() {
         };
 
         if (isSameItems(existingOrder.items, cartItems)) {
-          orderId = existingOrder.orderId; // 동일 → 그대로 사용
+          orderId = existingOrder.orderId; // 동일하면 그대로 사용
         } else {
-          // 3️⃣ 장바구니 다르면 PATCH 요청
+          // 장바구니 다르면 PATCH 요청
           const patchRes = await fetch(`/api/orders/${existingOrder.orderId}`, {
             method: "PATCH",
             headers: {
@@ -258,7 +257,7 @@ export default function CartPage() {
           orderId = patchData?.orderId ?? existingOrder.orderId;
         }
       } else {
-        // 4️⃣ 기존 주문 없으면 신규 생성
+        // 기존 주문 없으면 신규 생성
         const postRes = await fetch("/api/orders", {
           method: "POST",
           headers: {
@@ -277,7 +276,7 @@ export default function CartPage() {
         orderId = postData.orderId;
       }
 
-      // 5️⃣ Toss 결제 실행
+      // toss 결제 실행
       await widgets?.requestPayment({
         orderId: orderId.toString(),
         orderName: "스토어 상품 결제",

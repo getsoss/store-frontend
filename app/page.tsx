@@ -18,7 +18,6 @@ export default function Home() {
   const [totalPages, setTotalPages] = useState(0);
   const size = 12;
 
-  // 페이지네이션 기반 데이터 fetch
   const fetchProducts = async (page: number) => {
     try {
       const res = await fetch(`/api/products?page=${page}&size=${size}`);
@@ -36,7 +35,6 @@ export default function Home() {
     }
   };
 
-  // 페이지 변경 시 데이터 fetch
   useEffect(() => {
     fetchProducts(page);
   }, [page]);

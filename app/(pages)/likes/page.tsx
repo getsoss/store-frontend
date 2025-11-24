@@ -25,7 +25,7 @@ export default function LikesPage() {
         router.push("/login");
         return;
       }
-      const res = await fetch("/api/mypage/likes", { headers });
+      const res = await fetch("/api/me/likes", { headers });
 
       if (!res.ok) {
         const text = await res.text();

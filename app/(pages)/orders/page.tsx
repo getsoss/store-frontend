@@ -36,7 +36,7 @@ export default function OrdersPage() {
     }
 
     try {
-      const res = await fetch("/api/mypage/orders", {
+      const res = await fetch("/api/me/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
