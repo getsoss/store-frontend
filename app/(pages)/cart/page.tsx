@@ -1,5 +1,6 @@
 "use client";
 
+import Modal from "@/app/components/Modal";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +10,8 @@ import {
   loadTossPayments,
   TossPaymentsWidgets,
 } from "@tosspayments/tosspayments-sdk";
-import { Cart, CartItemWithProduct, OrderRequestDTO } from "@/app/types/dto";
+import { Cart, CartItemWithProduct } from "@/app/types/dto";
+import ReactModal from "react-modal";
 
 const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
 const customerKey = process.env.NEXT_PUBLIC_TOSS_CUSTOMER_KEY;
@@ -19,6 +21,10 @@ export default function CartPage() {
     currency: "KRW",
     value: 5_000,
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<CartItemWithProduct | null>(
+    null
+  );
   const [ready, setReady] = useState(false); // 결제 준비 상태
   const [widgets, setWidgets] = useState<TossPaymentsWidgets | null>(null); // 결제 위젯
   const router = useRouter();
@@ -204,6 +210,20 @@ export default function CartPage() {
     );
   }
 
+  const handleQuantityChangeClick = (item: CartItemWithProduct) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleQuantityUpdate = (newQuantity: number) => {
+    if (selectedItem) {
+      // 여기서 실제 수량 업데이트 API 호출 가능
+      console.log(`상품 ${selectedItem.productId} 수량 변경: ${newQuantity}`);
+      // 예: handleUpdateCart(selectedItem.cartId, newQuantity)
+    }
+    setIsModalOpen(false);
+  };
+
   const handlePayment = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -353,8 +373,15 @@ export default function CartPage() {
                       </h3>
                     </Link>
                     <p className="text-sm text-gray-500 mb-2">
-                      수량: {item.quantity}개
+                      수량: {item.quantity}개{" "}
+                      <button
+                        className="text-black border border-gray-200 rounded-md px-1 py-1"
+                        onClick={() => handleQuantityChangeClick(item)}
+                      >
+                        변경
+                      </button>
                     </p>
+
                     <p className="text-lg font-medium">
                       {item.product?.price
                         ? (item.product.price * item.quantity).toLocaleString()
@@ -423,6 +450,33 @@ export default function CartPage() {
           </div>
         )}
       </main>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="수량 변경"
+      >
+        <div className="flex flex-col gap-3">
+          <input
+            type="number"
+            min={1}
+            defaultValue={selectedItem?.quantity || 1}
+            className="border p-2 rounded w-full"
+            id="quantity-input"
+          />
+          <button
+            className="bg-black text-white py-2 rounded hover:bg-gray-800"
+            onClick={() => {
+              const input = document.getElementById(
+                "quantity-input"
+              ) as HTMLInputElement;
+              handleQuantityUpdate(Number(input.value));
+            }}
+          >
+            변경 완료
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
