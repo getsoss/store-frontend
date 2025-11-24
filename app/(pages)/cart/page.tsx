@@ -215,13 +215,48 @@ export default function CartPage() {
     setIsModalOpen(true);
   };
 
-  const handleQuantityUpdate = (newQuantity: number) => {
-    if (selectedItem) {
-      // 여기서 실제 수량 업데이트 API 호출 가능
-      console.log(`상품 ${selectedItem.productId} 수량 변경: ${newQuantity}`);
-      // 예: handleUpdateCart(selectedItem.cartId, newQuantity)
+  const handleQuantityUpdate = async (newQuantity: number) => {
+    if (!selectedItem) return;
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+      const res = await fetch(`/api/me/carts/${selectedItem.cartId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("수량 변경 실패:", data.error || data.message);
+        alert(data.error || "수량 변경 중 오류가 발생했습니다.");
+        return;
+      }
+
+      console.log("수량 변경 성공:", data.message);
+
+      // UI 상태 업데이트
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.cartId === selectedItem.cartId
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+
+      setIsModalOpen(false);
+    } catch (error: any) {
+      console.error("수량 변경 중 오류:", error);
+      alert(error?.message || "수량 변경 중 오류가 발생했습니다.");
     }
-    setIsModalOpen(false);
   };
 
   const handlePayment = async () => {
@@ -449,34 +484,36 @@ export default function CartPage() {
             </div>
           </div>
         )}
-      </main>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="수량 변경"
-      >
-        <div className="flex flex-col gap-3">
-          <input
-            type="number"
-            min={1}
-            defaultValue={selectedItem?.quantity || 1}
-            className="border p-2 rounded w-full"
-            id="quantity-input"
-          />
-          <button
-            className="bg-black text-white py-2 rounded hover:bg-gray-800"
-            onClick={() => {
-              const input = document.getElementById(
-                "quantity-input"
-              ) as HTMLInputElement;
-              handleQuantityUpdate(Number(input.value));
-            }}
+        {isModalOpen && selectedItem && (
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="수량 변경"
           >
-            변경 완료
-          </button>
-        </div>
-      </Modal>
+            <div className="flex flex-col gap-3">
+              <input
+                type="number"
+                min={1}
+                defaultValue={selectedItem.quantity}
+                className="border p-2 rounded w-full"
+                id="quantity-input"
+              />
+              <button
+                className="bg-black text-white py-2 rounded hover:bg-gray-800"
+                onClick={() => {
+                  const input = document.getElementById(
+                    "quantity-input"
+                  ) as HTMLInputElement;
+                  handleQuantityUpdate(Number(input.value));
+                }}
+              >
+                변경 완료
+              </button>
+            </div>
+          </Modal>
+        )}
+      </main>
     </div>
   );
 }
