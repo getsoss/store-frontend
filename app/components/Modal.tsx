@@ -16,21 +16,17 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
     const body = document.body;
     const header = document.querySelector("header") as HTMLElement | null;
 
-    // 스크롤바 너비 계산
     const scrollBarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
-    // 스크롤 막기
     body.style.overflow = "hidden";
 
-    // 패딩 적용 (헤더도 포함)
     if (scrollBarWidth > 0) {
       body.style.paddingRight = `${scrollBarWidth}px`;
       if (header) header.style.paddingRight = `${scrollBarWidth}px`;
     }
 
     return () => {
-      // 모달 종료 시 원래대로 복원
       body.style.overflow = "";
       body.style.paddingRight = "";
       if (header) header.style.paddingRight = "";
