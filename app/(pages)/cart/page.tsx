@@ -180,6 +180,7 @@ export default function CartPage() {
         },
         body: JSON.stringify({
           productId: item.productId,
+          productSizeId: item.productSizeId,
         }),
       });
 
