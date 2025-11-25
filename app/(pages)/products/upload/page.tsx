@@ -74,6 +74,16 @@ export default function ProductUploadPage() {
     }
   };
 
+  const isFormValid = (): boolean => {
+    // 이름, 가격, 카테고리, 사이즈가 모두 유효한지 체크
+    const hasName = formData.name.trim() !== "";
+    const hasPrice = formData.price > 0;
+    const hasCategory = formData.categoryId !== 0;
+    const hasSizes = formData.sizes.every((size) => size.trim() !== "");
+
+    return hasName && hasPrice && hasCategory && hasSizes;
+  };
+
   // 입력 핸들러
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -302,8 +312,13 @@ export default function ProductUploadPage() {
         </div>
 
         <button
-          className="w-full mt-5 px-3.5 py-2.5 rounded-md bg-gray-200 text-gray-800"
+          className={`w-full mt-5 px-3.5 py-2.5 rounded-md ${
+            isFormValid()
+              ? "bg-black text-white"
+              : "bg-gray-200 text-gray-800 cursor-not-allowed"
+          }`}
           onClick={handleClickUpload}
+          disabled={!isFormValid()}
         >
           등록하기
         </button>
