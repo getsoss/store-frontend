@@ -18,6 +18,7 @@ export default function ProductDetailPage() {
   const [wished, setWished] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [selectedSizeId, setSelectedSizeId] = useState<number | "">("");
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<ProductSummaryDTO[]>(
     []
@@ -42,6 +43,10 @@ export default function ProductDetailPage() {
         product: data.product,
         category: data.category,
         images: data.images,
+        sizes: data.sizes.map((s: any) => ({
+          productSizeId: s.productSizeId,
+          size: s.size,
+        })), // <-- 이제 id와 size 모두 포함
         likeCount: data.likeCount,
         isLiked: data.isLiked,
         isWished: data.isWished,
@@ -145,6 +150,10 @@ export default function ProductDetailPage() {
   // 장바구니 추가
   const handleAddToCart = async () => {
     try {
+      if (selectedSizeId === "") {
+        alert("사이즈를 선택해주세요.");
+        return;
+      }
       const token = localStorage.getItem("accessToken");
       if (!token) {
         alert("로그인이 필요합니다.");
@@ -153,13 +162,14 @@ export default function ProductDetailPage() {
       }
 
       const productId = Number(params.productId);
+      const productSizeId = selectedSizeId;
       const res = await fetch("/api/me/carts", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, quantity, productSizeId }),
       });
 
       if (!res.ok) {
@@ -192,7 +202,11 @@ export default function ProductDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({
+          productId,
+          quantity,
+          productSizeId: selectedSizeId,
+        }),
       });
 
       if (!res.ok) {
@@ -206,6 +220,11 @@ export default function ProductDetailPage() {
       console.error("바로 구매 오류:", error);
       alert("바로 구매 처리 중 오류 발생");
     }
+  };
+
+  const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedSizeId(value ? Number(value) : "");
   };
 
   return (
@@ -380,11 +399,33 @@ export default function ProductDetailPage() {
                 <h2 className="text-sm font-medium mb-3 uppercase tracking-wide">
                   상품 정보
                 </h2>
-                <dl className="grid grid-cols-1 gap-3 text-sm">
-                  <div className="flex justify-between">
+                <dl className="gap-3 text-sm">
+                  {/* 가격 */}
+                  <div className="mb-2 flex justify-between">
                     <dt className="text-gray-500">가격</dt>
                     <dd className="font-medium">
                       {productDetail?.product?.price.toLocaleString()}원
+                    </dd>
+                  </div>
+
+                  {/* 사이즈 */}
+                  <div className="flex justify-between items-center">
+                    <dt className="text-gray-500 mb-1 ">사이즈</dt>
+                    <dd>
+                      <div>
+                        <select
+                          className="w-full border p-2 rounded"
+                          onChange={handleSizeChange}
+                        >
+                          <option value="">사이즈 선택</option>
+                          {productDetail?.sizes.map((s, index) => (
+                            // s가 { size: string, productSizeId: number } 형태라고 가정
+                            <option key={index} value={s.productSizeId}>
+                              {s.size}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </dd>
                   </div>
                 </dl>

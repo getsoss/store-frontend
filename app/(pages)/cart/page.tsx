@@ -125,16 +125,23 @@ export default function CartPage() {
             const productRes = await fetch(`/api/products/${item.productId}`);
             if (productRes.ok) {
               const productData = await productRes.json();
+              // 선택된 사이즈 이름 찾기
+              const selectedSize = productData.sizes?.find(
+                (s: { productSizeId: number }) =>
+                  s.productSizeId === item.productSizeId
+              )?.size;
+
               return {
                 ...item,
                 product: productData.product,
                 image: productData.images?.[0],
+                size: selectedSize || "없음", // cartItem.size 추가
               };
             }
           } catch (error) {
             console.error(`상품 ${item.productId} 정보 가져오기 실패:`, error);
           }
-          return item;
+          return { ...item, size: "없음" };
         })
       );
 
@@ -408,7 +415,7 @@ export default function CartPage() {
                       </h3>
                     </Link>
                     <p className="text-sm text-gray-500 mb-2">
-                      수량: {item.quantity}개{" "}
+                      수량: {item.quantity}개 | 사이즈: {item.size || "없음"}{" "}
                       <button
                         className="text-black border border-gray-200 rounded-md px-1 py-1"
                         onClick={() => handleQuantityChangeClick(item)}

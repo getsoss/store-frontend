@@ -11,32 +11,42 @@ export const POST = async (req: NextRequest) => {
     }
 
     const body = await req.json();
-    const { productId, quantity } = body as {
+    const { productId, quantity, productSizeId } = body as {
       productId: number;
       quantity: number;
+      productSizeId: number;
     };
 
-    if (!productId || !quantity) {
+    if (!productSizeId) {
       return NextResponse.json(
-        { error: "상품 ID와 수량이 필요합니다." },
+        { error: "사이즈를 선택해주세요." },
         { status: 400 }
       );
     }
+
     const backendRes = await fetch("http://localhost:8080/api/carts/buy-now", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ productId, quantity }),
+      body: JSON.stringify({ productId, quantity, productSizeId }),
     });
 
     if (!backendRes.ok) {
-      const err = await backendRes.json();
-      return NextResponse.json(
-        { error: err.message || "바로 구매 처리 실패" },
-        { status: 400 }
-      );
+      let errMsg = "바로 구매 처리 실패";
+
+      try {
+        const text = await backendRes.text();
+        if (text) {
+          const err = JSON.parse(text);
+          errMsg = err.message || errMsg;
+        }
+      } catch (e) {
+        // JSON 파싱 실패해도 무시
+      }
+
+      return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
     const data = await backendRes.json();

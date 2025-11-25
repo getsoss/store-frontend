@@ -25,6 +25,7 @@ export interface Cart {
   cartId: number;
   memberId: number;
   productId: number;
+  productSizeId: number;
   quantity: number;
   createdAt?: string;
   updatedAt?: string;
@@ -64,9 +65,15 @@ export interface LoginResponseDTO {
   refreshToken: string;
 }
 
+export interface ProductSizeDTO {
+  size: string;
+  productSizeId: number;
+}
+
 export interface ProductResponseDTO {
   product: Product;
   images: ProductImage[];
+  sizes: ProductSizeDTO[]; // 수정: 문자열 배열 -> 객체 배열
   category: Category;
   likeCount: number;
   isLiked: boolean;
@@ -80,7 +87,8 @@ export interface ProductSummaryDTO {
 
 export interface CartItemWithProduct extends Cart {
   product?: Product;
-  image?: ProductImage;
+  image?: { imageUrl: string };
+  size?: string;
 }
 
 export interface ProductDetail extends ProductResponseDTO {}
