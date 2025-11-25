@@ -60,8 +60,10 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className="h-24 p-4 space-y-1 flex flex-col justify-between">
-          <h3 className="text-sm font-medium">{product.name}</h3>
+        <div className="p-4 space-y-1 flex flex-col justify-between">
+          <h3 className="text-sm font-medium overflow-hidden whitespace-nowrap text-ellipsis">
+            {product.name}
+          </h3>
           <p className="text-sm font-light">{product.price}원</p>
         </div>
       </div>
@@ -76,6 +78,7 @@ export default function Home() {
       <Carousel
         products={products
           .filter((p) => p.product.categoryId === 5)
+          .filter((p) => p.productImage)
           .map((p) => ({
             productId: p.product.productId,
             name: p.product.name,

@@ -376,7 +376,7 @@ export default function ProductDetailPage() {
                 <span className="text-sm text-gray-500 uppercase tracking-wide">
                   {productDetail?.category?.name}
                 </span>
-                <h1 className="text-4xl font-light mt-2 mb-4 tracking-tight">
+                <h1 className="text-4xl font-light mt-2 mb-4 tracking-tight break-words">
                   {productDetail?.product?.name}
                 </h1>
                 <p className="text-3xl font-medium">
@@ -389,7 +389,7 @@ export default function ProductDetailPage() {
                 <h2 className="text-sm font-medium mb-3 uppercase tracking-wide">
                   상품 설명
                 </h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line break-words">
                   {productDetail?.product?.description}
                 </p>
               </div>

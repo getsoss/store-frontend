@@ -66,7 +66,7 @@ export default function Home() {
   const ProductCard = ({ product, image }: ProductCardProps) => {
     return (
       <Link key={product.productId} href={`/products/${product.productId}`}>
-        <div className="border border-black cursor-pointer hover:bg-black hover:text-white transition">
+        <div className="border border-black cursor-pointer hover:bg-black hover:text-white transition h-full">
           <div className="aspect-square bg-gray-100 flex items-center justify-center">
             <div className="w-3/4 h-3/4 border border-gray-300 flex items-center justify-center">
               {image && image.imageUrl ? (
@@ -82,9 +82,10 @@ export default function Home() {
               )}
             </div>
           </div>
-
-          <div className="p-4 space-y-1">
-            <h3 className="text-sm font-medium">{product.name}</h3>
+          <div className="p-4 space-y-1 flex flex-col justify-between">
+            <h3 className="text-sm font-medium overflow-hidden whitespace-nowrap text-ellipsis">
+              {product.name}
+            </h3>
             <p className="text-sm font-light">{product.price}원</p>
           </div>
         </div>
