@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SignupRequestDTO } from "@/app/types/dto";
 
 export default function SignupPage() {
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({
     email: "",
     name: "",
@@ -12,10 +13,22 @@ export default function SignupPage() {
     address: "",
     addressDetail: "",
     password: "",
+    passwordConfirm: "", // 추가
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const email = searchParams.get("email");
+    const name = searchParams.get("name");
+
+    setForm((prev) => ({
+      ...prev,
+      email: email || "",
+      name: name || "",
+    }));
+  }, [searchParams]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -25,7 +38,6 @@ export default function SignupPage() {
       "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
     script.async = true;
     document.body.appendChild(script);
-    return () => {};
   }, []);
 
   const openPostcode = () => {
@@ -73,14 +85,22 @@ export default function SignupPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
     if (!isValidPhone(form.phone)) {
       setError("전화번호를 010-1234-5678 형식으로 정확히 입력해주세요.");
       return;
     }
+
     if (!isValidPassword(form.password)) {
       setError("비밀번호는 10자 이상, 영문과 숫자를 모두 포함해야 합니다.");
       return;
     }
+
+    if (form.password !== form.passwordConfirm) {
+      setError("비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
     setLoading(true);
     try {
       const signupData: SignupRequestDTO = {
@@ -210,6 +230,18 @@ export default function SignupPage() {
             onChange={onChange}
             required
             placeholder="10자 이상의 영문, 숫자만 가능합니다."
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
+          />
+        </label>
+        <label className="grid gap-1">
+          <span>비밀번호 확인</span>
+          <input
+            type="password"
+            name="passwordConfirm"
+            value={form.passwordConfirm}
+            onChange={onChange}
+            required
+            placeholder="비밀번호를 다시 입력하세요"
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>

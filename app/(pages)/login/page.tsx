@@ -130,7 +130,7 @@ export default function LoginPage() {
           onClick={handleKakaoLogin}
           className="mt-4 w-full px-3.5 py-2.5 rounded-md bg-[#FEE500] text-black font-medium hover:bg-[#FDD835] transition"
         >
-          카카오로 로그인
+          카카오로 회원가입
         </button>
       </div>
     </main>
