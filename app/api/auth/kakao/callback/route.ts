@@ -8,11 +8,11 @@ export async function GET(request: NextRequest) {
       `http://localhost:8080/api/auth/oauth/kakao/callback?code=${code}`,
       {
         method: "GET",
-        credentials: "include", // 중요
+        credentials: "include",
       }
     );
 
-    const setCookie = backendRes.headers.get("set-cookie"); // ★★★ 중요 ★★★
+    const setCookie = backendRes.headers.get("set-cookie");
     const data = await backendRes.json();
 
     const redirectUrl = new URL(
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const res = NextResponse.redirect(redirectUrl);
 
     if (setCookie) {
-      res.headers.set("set-cookie", setCookie); // ★ 브라우저로 전달
+      res.headers.set("set-cookie", setCookie);
     }
 
     return res;
