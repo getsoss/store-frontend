@@ -44,17 +44,6 @@ export default function MyPage() {
     return date.toISOString().slice(0, 10); // YYYY-MM-DD
   };
 
-  function parseJwt(token: string | null) {
-    if (!token) return null;
-    try {
-      const base64Payload = token.split(".")[1];
-      const payload = JSON.parse(atob(base64Payload));
-      return payload;
-    } catch {
-      return null;
-    }
-  }
-
   const fetchMemberDetail = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -110,6 +99,22 @@ export default function MyPage() {
                 {memberInfo?.createdAt ? formatDate(memberInfo.createdAt) : ""}
               </span>
             </div>
+          </div>
+
+          {/* 여기서 내 정보 수정하기 버튼 추가 */}
+          <div className="flex mt-6 gap-6">
+            <button
+              onClick={() => router.push("/mypage/password-confirm")}
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition hover:bg-neutral-100 hover:shadow-md"
+            >
+              내 정보 수정하기
+            </button>
+            <button
+              onClick={() => router.push("/mypage/edit/password")}
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition hover:bg-neutral-100 hover:shadow-md"
+            >
+              비밀번호 수정하기
+            </button>
           </div>
         </header>
 

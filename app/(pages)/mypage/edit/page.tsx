@@ -1,43 +1,64 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { SignupRequestDTO } from "@/app/types/dto";
+import { useRouter } from "next/navigation";
+import { UpdateRequestDTO } from "@/app/types/dto";
 
-export default function SignupPage() {
-  const searchParams = useSearchParams();
+export default function UpdatePage() {
   const [form, setForm] = useState({
     email: "",
     name: "",
     phone: "",
     address: "",
     addressDetail: "",
-    password: "",
-    passwordConfirm: "", // 추가
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const email = searchParams.get("email");
-    const name = searchParams.get("name");
-
-    setForm((prev) => ({
-      ...prev,
-      email: email || "",
-      name: name || "",
-    }));
-  }, [searchParams]);
-
+  // 주소검색 스크립트 로딩
   useEffect(() => {
     if (typeof window === "undefined") return;
     if ((window as any).daum && (window as any).daum.Postcode) return;
+
     const script = document.createElement("script");
     script.src =
       "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
     script.async = true;
     document.body.appendChild(script);
+  }, []);
+
+  // 초기 사용자 정보 불러오기 (GET /api/me/edit)
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          alert("로그인이 필요합니다");
+          router.push("/login");
+          return;
+        }
+
+        const res = await fetch("/api/me/edit", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("사용자 정보를 불러오지 못했습니다.");
+        const data = await res.json();
+        setForm((prev) => ({
+          ...prev,
+          email: data.email || "",
+          name: data.name || "",
+          phone: formatPhone(data.phone || ""),
+          address: data.address || "",
+        }));
+      } catch (err: any) {
+        setError(
+          err.message || "사용자 정보를 불러오는 중 오류가 발생했습니다."
+        );
+      }
+    };
+
+    fetchUser();
   }, []);
 
   const openPostcode = () => {
@@ -47,19 +68,13 @@ export default function SignupPage() {
       );
       return;
     }
+
     new (window as any).daum.Postcode({
       oncomplete: (data: any) => {
         const address = data.roadAddress || data.address || "";
         setForm((prev) => ({ ...prev, address }));
       },
     }).open();
-  };
-
-  const onChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const formatPhone = (value: string) => {
@@ -74,12 +89,13 @@ export default function SignupPage() {
     setForm((prev) => ({ ...prev, phone: formatPhone(value) }));
   };
 
-  const isValidPhone = (phone: string) => {
-    return /^\d{3}-\d{4}-\d{4}$/.test(phone);
-  };
+  const isValidPhone = (phone: string) => /^\d{3}-\d{4}-\d{4}$/.test(phone);
 
-  const isValidPassword = (pw: string) => {
-    return pw.length >= 10 && /[a-zA-Z]/.test(pw) && /\d/.test(pw);
+  const onChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -91,60 +107,39 @@ export default function SignupPage() {
       return;
     }
 
-    if (!isValidPassword(form.password)) {
-      setError("비밀번호는 10자 이상, 영문과 숫자를 모두 포함해야 합니다.");
-      return;
-    }
-
-    if (form.password !== form.passwordConfirm) {
-      setError("비밀번호 확인이 일치하지 않습니다.");
-      return;
-    }
-
     setLoading(true);
     try {
-      const signupData: SignupRequestDTO = {
-        email: form.email,
+      const updateData: UpdateRequestDTO = {
         name: form.name,
         phone: form.phone.replace(/-/g, ""),
         address: `${form.address}${
           form.addressDetail ? ` ${form.addressDetail}` : ""
         }`.trim(),
-        password: form.password,
       };
 
-      const res = await fetch("/api/members", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(signupData),
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다");
+        router.push("/login");
+        return;
+      }
+
+      const res = await fetch("/api/me/edit", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "회원정보 수정 실패");
 
-      if (!res.ok) {
-        throw new Error(
-          data.error || `Request failed with status ${res.status}`
-        );
-      }
-
-      try {
-        sessionStorage.setItem(
-          "signupResult",
-          JSON.stringify({
-            id: data?.id ?? "",
-            email: form.email,
-            name: form.name,
-          })
-        );
-      } catch {}
-
-      router.push(`/signup-done`);
+      alert("내 정보가 수정되었습니다");
+      router.push("/mypage");
     } catch (err: any) {
-      if (err.message && typeof err.message === "string") {
-        setError(err.message);
-      } else {
-        setError("회원가입 중 오류가 발생했습니다.");
-      }
+      setError(err.message || "회원정보 수정 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -161,7 +156,8 @@ export default function SignupPage() {
           ← 돌아가기
         </button>
       </div>
-      <h1 className="text-2xl font-bold mb-4">회원가입</h1>
+      <h1 className="text-2xl font-bold mb-4">회원정보 수정</h1>
+
       <form onSubmit={onSubmit} className="grid gap-3">
         <label className="grid gap-1">
           <span>이메일</span>
@@ -169,12 +165,11 @@ export default function SignupPage() {
             type="email"
             name="email"
             value={form.email}
-            onChange={onChange}
-            required
-            placeholder="you@example.com"
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
+            readOnly
+            className="px-3 py-2 border border-gray-300 rounded-md bg-gray-200 cursor-not-allowed"
           />
         </label>
+
         <label className="grid gap-1">
           <span>이름</span>
           <input
@@ -183,10 +178,10 @@ export default function SignupPage() {
             value={form.name}
             onChange={onChange}
             required
-            placeholder="홍길동"
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>
+
         <label className="grid gap-1">
           <span>휴대폰</span>
           <input
@@ -195,10 +190,11 @@ export default function SignupPage() {
             value={form.phone}
             onChange={onPhoneChange}
             required
-            placeholder="010-1234-5678"
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>
+
+        {/* 주소 입력 + 검색 버튼 */}
         <label className="grid gap-1">
           <span>주소</span>
           <div className="flex gap-2">
@@ -207,8 +203,6 @@ export default function SignupPage() {
               name="address"
               value={form.address}
               onChange={onChange}
-              required
-              placeholder="도로명 주소를 검색하여 입력하세요"
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
             />
             <button
@@ -220,6 +214,7 @@ export default function SignupPage() {
             </button>
           </div>
         </label>
+
         <label className="grid gap-1">
           <input
             type="text"
@@ -230,40 +225,16 @@ export default function SignupPage() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
           />
         </label>
-        <label className="grid gap-1">
-          <span>비밀번호</span>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={onChange}
-            required
-            placeholder="10자 이상의 영문, 숫자만 가능합니다."
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
-          />
-        </label>
-        <label className="grid gap-1">
-          <span>비밀번호 확인</span>
-          <input
-            type="password"
-            name="passwordConfirm"
-            value={form.passwordConfirm}
-            onChange={onChange}
-            required
-            placeholder="비밀번호를 다시 입력하세요"
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
-          />
-        </label>
 
         <button
           type="submit"
           disabled={loading}
           className="px-3.5 py-2.5 rounded-md bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "처리 중..." : "회원가입"}
+          {loading ? "처리 중..." : "정보 수정"}
         </button>
 
-        {error ? <p className="text-red-600">{error}</p> : null}
+        {error && <p className="text-red-600">{error}</p>}
       </form>
     </main>
   );

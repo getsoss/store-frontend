@@ -102,3 +102,11 @@ export interface OrderItemDTO {
   quantity: number; // 수량
   price: number; // 상품 가격
 }
+
+export interface UpdateRequestDTO {
+  memberId?: number; // 선택: 수정할 회원 ID, 서버에서 세션 기반으로 처리 가능
+  name?: string; // 이름 수정 가능
+  phone?: string; // 전화번호 수정 가능
+  address?: string; // 주소 수정 가능
+  password?: string; // 비밀번호 변경 시 입력, 선택 사항
+}
