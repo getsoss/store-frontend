@@ -71,13 +71,21 @@ export default function ProductUploadPage() {
 
   const handleAddHashtag = async () => {
     const tag = newHashtag.trim();
-    if (!tag || allHashtags.includes(tag)) return;
+    if (!tag) return;
+
+    // 이미 존재하면 바로 alert
+    if (allHashtags.includes(tag)) {
+      alert("해시태그가 중복되었습니다.");
+      return;
+    }
+
     const token = localStorage.getItem("accessToken");
     if (!token) {
       alert("로그인이 필요합니다");
       router.push("/login");
       return;
     }
+
     try {
       const res = await fetch("/api/hashtags", {
         method: "POST",
@@ -87,8 +95,18 @@ export default function ProductUploadPage() {
         },
         body: JSON.stringify({ name: tag }),
       });
-      if (!res.ok) throw new Error("해시태그 등록 실패");
 
+      const data = await res.json();
+
+      if (!res.ok) {
+        // 서버에서 메시지가 오면 alert
+        alert(data?.error || "해시태그 등록 실패");
+        return;
+      }
+
+      alert(data?.message || "해시태그가 등록되었습니다.");
+
+      // 성공 시 상태 업데이트
       setAllHashtags((prev) => [...prev, tag]);
       setFormData((prev) => ({ ...prev, hashtags: [...prev.hashtags, tag] }));
       setNewHashtag("");
@@ -115,7 +133,6 @@ export default function ProductUploadPage() {
       if (!res.ok) throw new Error("해시태그 로드 실패");
       const data = await res.json();
       setAllHashtags(data); // name 기준으로 사용
-      console.log(data);
     } catch (error) {
       console.error(error);
     }
