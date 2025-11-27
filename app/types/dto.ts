@@ -71,10 +71,15 @@ export interface ProductSizeDTO {
   productSizeId: number;
 }
 
+export interface hashtag {
+  name: string;
+}
+
 export interface ProductResponseDTO {
   product: Product;
   images: ProductImage[];
   sizes: ProductSizeDTO[]; // 수정: 문자열 배열 -> 객체 배열
+  hashtags: hashtag[];
   category: Category;
   likeCount: number;
   isLiked: boolean;

@@ -47,12 +47,14 @@ export default function ProductDetailPage() {
           productSizeId: s.productSizeId,
           size: s.size,
         })), // <-- 이제 id와 size 모두 포함
+        hashtags: data.hashtags,
         likeCount: data.likeCount,
         isLiked: data.isLiked,
         isWished: data.isWished,
       });
       setLiked(data.isLiked || false);
       setWished(data.isWished || false);
+      console.log(data);
     } catch (error: any) {
       console.error(error?.message || "상품 상세 fetch 오류");
     }
@@ -225,6 +227,10 @@ export default function ProductDetailPage() {
   const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
     setSelectedSizeId(value ? Number(value) : "");
+  };
+
+  const handleClickHashtag = (h: string) => {
+    router.push(`/products/search/${encodeURIComponent(h)}?page=0&size=12`);
   };
 
   return (
@@ -431,6 +437,21 @@ export default function ProductDetailPage() {
                 </dl>
               </div>
             </div>
+
+            {/* 해시태그 */}
+            {productDetail?.hashtags && productDetail.hashtags.length > 0 && (
+              <div className="flex gap-2 flex-wrap my-3">
+                {productDetail.hashtags.map((h, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 rounded-full border border-gray-300 text-gray-700 cursor-pointer"
+                    onClick={() => handleClickHashtag(h.name)}
+                  >
+                    #{h.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* 수량 및 총 가격 */}
             <div className="pt-6 border-t border-gray-200">
