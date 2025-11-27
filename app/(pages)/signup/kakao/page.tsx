@@ -130,6 +130,17 @@ export default function KakaoSignupPage() {
           data.error || `Request failed with status ${res.status}`
         );
 
+      try {
+        sessionStorage.setItem(
+          "signupResult",
+          JSON.stringify({
+            id: data?.id ?? "",
+            email: form.email,
+            name: form.name,
+          })
+        );
+      } catch {}
+
       router.push("/signup-done");
     } catch (err: any) {
       setError(err.message || "회원가입 중 오류가 발생했습니다.");

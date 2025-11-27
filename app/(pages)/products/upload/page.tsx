@@ -27,6 +27,7 @@ interface ProductForm {
   price: number;
   categoryId: number;
   sizes: string[];
+  hashtags: string[];
 }
 
 export default function ProductUploadPage() {
@@ -39,8 +40,12 @@ export default function ProductUploadPage() {
     price: 0,
     categoryId: 0,
     sizes: [""],
+    hashtags: [],
   });
   const [images, setImages] = useState<ImagePreview[]>([]);
+  const [allHashtags, setAllHashtags] = useState<string[]>([]); // 서버에서 전체 해시태그
+  const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]); // 사용자가 선택한 해시태그
+  const [newHashtag, setNewHashtag] = useState(""); // 새 해시태그 입력용
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -61,7 +66,60 @@ export default function ProductUploadPage() {
 
   useEffect(() => {
     fetchCategories();
+    fetchHashtags();
   }, []);
+
+  const handleAddHashtag = async () => {
+    const tag = newHashtag.trim();
+    if (!tag || allHashtags.includes(tag)) return;
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다");
+      router.push("/login");
+      return;
+    }
+    try {
+      const res = await fetch("/api/hashtags", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: tag }),
+      });
+      if (!res.ok) throw new Error("해시태그 등록 실패");
+
+      setAllHashtags((prev) => [...prev, tag]);
+      setFormData((prev) => ({ ...prev, hashtags: [...prev.hashtags, tag] }));
+      setNewHashtag("");
+    } catch (error: any) {
+      alert(error?.message || "해시태그 등록 중 오류");
+    }
+  };
+
+  const handleHashtagToggle = (tag: string) => {
+    setFormData((prev) => {
+      const exists = prev.hashtags.includes(tag);
+      return {
+        ...prev,
+        hashtags: exists
+          ? prev.hashtags.filter((t) => t !== tag)
+          : [...prev.hashtags, tag],
+      };
+    });
+  };
+
+  const fetchHashtags = async () => {
+    try {
+      const res = await fetch("/api/hashtags");
+      if (!res.ok) throw new Error("해시태그 로드 실패");
+      const data = await res.json();
+      setAllHashtags(data); // name 기준으로 사용
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -145,6 +203,13 @@ export default function ProductUploadPage() {
   // 상품 등록
   const handleClickUpload = async () => {
     try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다");
+        router.push("/login");
+        return;
+      }
+
       const body = {
         product: {
           name: formData.name,
@@ -152,24 +217,25 @@ export default function ProductUploadPage() {
           price: formData.price,
           categoryId: Number(formData.categoryId),
         },
-        productSizes: formData.sizes.map((size) => ({
-          size,
-        })),
+        productSizes: formData.sizes.map((size) => ({ size })),
       };
 
       const res = await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(body),
       });
 
-      console.log(body);
       if (!res.ok) throw new Error("상품 업로드 실패");
 
       const created = await res.json();
       const productId = created?.product?.productId;
       if (!productId) throw new Error("상품 ID를 가져오지 못했습니다.");
 
+      // 이미지 업로드
       if (images.length > 0) {
         const imgForm = new FormData();
         images.forEach((img) => imgForm.append("images", img.file));
@@ -178,6 +244,19 @@ export default function ProductUploadPage() {
           body: imgForm,
         });
         if (!imgRes.ok) throw new Error("이미지 업로드 실패");
+      }
+
+      // 해시태그 연동
+      if (formData.hashtags.length > 0) {
+        const tagRes = await fetch(`/api/products/${productId}/hashtags`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ hashtags: formData.hashtags }),
+        });
+        if (!tagRes.ok) throw new Error("해시태그 연동 실패");
       }
 
       alert("상품이 등록되었습니다.");
@@ -189,6 +268,8 @@ export default function ProductUploadPage() {
   };
 
   if (!allowed) return null;
+
+  console.log(allHashtags);
 
   return (
     <main className="mx-auto max-w-2xl p-6 mt-10">
@@ -248,6 +329,12 @@ export default function ProductUploadPage() {
                 placeholder="ex) Free, S, M, L"
                 value={size}
                 onChange={(e) => handleSizeChange(index, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault(); // 폼 제출 방지
+                    handleAddButton();
+                  }
+                }}
               />
               {index === 0 ? (
                 <button
@@ -268,6 +355,49 @@ export default function ProductUploadPage() {
               )}
             </div>
           ))}
+        </div>
+
+        <div className="space-y-2 mt-4">
+          <label className="w-full block text-sm font-medium">해시태그</label>
+          <div className="flex gap-2 flex-wrap">
+            {allHashtags.map((tag, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => handleHashtagToggle(tag)}
+                className={`px-3 py-1 rounded-full border ${
+                  formData.hashtags.includes(tag)
+                    ? "bg-black text-white"
+                    : "border-gray-300 text-gray-700"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-2">
+            <input
+              type="text"
+              value={newHashtag}
+              onChange={(e) => setNewHashtag(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // 폼 제출 방지
+                  handleAddHashtag();
+                }
+              }}
+              placeholder="새 해시태그 입력"
+              className="border p-2 rounded flex-1"
+            />
+
+            <button
+              type="button"
+              onClick={handleAddHashtag}
+              className="border p-2 rounded"
+            >
+              추가
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2 mt-4">
