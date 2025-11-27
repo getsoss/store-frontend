@@ -58,6 +58,7 @@ export interface SignupRequestDTO {
   phone: string;
   address: string;
   password: string;
+  kakaoId?: string;
 }
 
 export interface LoginResponseDTO {

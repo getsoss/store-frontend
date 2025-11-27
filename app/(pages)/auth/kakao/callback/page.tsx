@@ -9,7 +9,6 @@ export default function KakaoCallbackPage() {
 
   useEffect(() => {
     const accessToken = searchParams.get("accessToken");
-    const refreshToken = searchParams.get("refreshToken");
     const error = searchParams.get("error");
 
     if (error) {
@@ -17,16 +16,20 @@ export default function KakaoCallbackPage() {
       return;
     }
 
-    if (accessToken && refreshToken) {
+    if (accessToken) {
+      // refreshToken은 HttpOnly 쿠키로 설정되었으므로, accessToken만 저장
       localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
       router.push("/");
     } else {
+      // 코드가 남았다면 다시 API 라우트로 요청
       const code = searchParams.get("code");
       if (code) {
+        // 이 부분이 백엔드에서 리다이렉트되기 전 카카오 인증 코드를 받을 때 발생
         window.location.href = `/api/auth/kakao/callback?code=${code}`;
       } else {
-        router.push(`/login?error=${encodeURIComponent("토큰이 없습니다.")}`);
+        router.push(
+          `/login?error=${encodeURIComponent("로그인 정보가 없습니다.")}`
+        );
       }
     }
   }, [router, searchParams]);
