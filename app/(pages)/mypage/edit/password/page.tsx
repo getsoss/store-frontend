@@ -82,7 +82,7 @@ export default function PasswordUpdatePage() {
       <div className="mb-6">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push("/mypage")}
           className="text-sm inline-flex items-center cursor-pointer"
         >
           ← 돌아가기
