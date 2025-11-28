@@ -416,9 +416,9 @@ export default function CartPage() {
                       </h3>
                     </Link>
                     <p className="text-sm text-gray-500 mb-2">
-                      수량: {item.quantity}개 | 사이즈: {item.size || "없음"}{" "}
+                      사이즈: {item.size || "없음"} | 수량: {item.quantity}개
                       <button
-                        className="text-black border border-gray-200 rounded-md px-1 py-1"
+                        className="text-black border border-gray-200 rounded-md px-1 py-1 m-1"
                         onClick={() => handleQuantityChangeClick(item)}
                       >
                         변경

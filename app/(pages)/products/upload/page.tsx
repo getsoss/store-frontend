@@ -73,13 +73,20 @@ export default function ProductUploadPage() {
     const tag = newHashtag.trim();
     if (!tag) return;
 
-    // 이미 존재하면 바로 alert
+    const token = localStorage.getItem("accessToken");
+
+    // 이미 존재하는 해시태그라면 바로 선택 상태로 만들기
     if (allHashtags.includes(tag)) {
-      alert("해시태그가 중복되었습니다.");
-      return;
+      if (!formData.hashtags.includes(tag)) {
+        setFormData((prev) => ({
+          ...prev,
+          hashtags: [...prev.hashtags, tag],
+        }));
+      }
+      setNewHashtag("");
+      return; // 더 이상 서버 요청 안 함
     }
 
-    const token = localStorage.getItem("accessToken");
     if (!token) {
       alert("로그인이 필요합니다");
       router.push("/login");
@@ -99,7 +106,6 @@ export default function ProductUploadPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // 서버에서 메시지가 오면 alert
         alert(data?.error || "해시태그 등록 실패");
         return;
       }
@@ -108,7 +114,10 @@ export default function ProductUploadPage() {
 
       // 성공 시 상태 업데이트
       setAllHashtags((prev) => [...prev, tag]);
-      setFormData((prev) => ({ ...prev, hashtags: [...prev.hashtags, tag] }));
+      setFormData((prev) => ({
+        ...prev,
+        hashtags: [...prev.hashtags, tag],
+      }));
       setNewHashtag("");
     } catch (error: any) {
       alert(error?.message || "해시태그 등록 중 오류");
