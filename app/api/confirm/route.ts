@@ -21,13 +21,21 @@ export async function POST(req: NextRequest) {
 
   const data = await tossRes.json();
 
+  const authorization = req.headers.get("Authorization");
+  if (!authorization) {
+    return NextResponse.json({ error: "인증 토큰 필요" }, { status: 401 });
+  }
+
   // 전체 결제 응답을 콘솔에서 확인
   console.log("TOSS 전체 응답:", data);
 
   // 전체 응답을 Spring 서버로 전달
   await fetch("http://localhost:8080/api/payments/confirm", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: authorization,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(data),
   });
 

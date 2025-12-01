@@ -10,7 +10,7 @@ import {
   loadTossPayments,
   TossPaymentsWidgets,
 } from "@tosspayments/tosspayments-sdk";
-import { Cart, CartItemWithProduct } from "@/app/types/dto";
+import { Cart, CartItemWithProduct, Category } from "@/app/types/dto";
 import ReactModal from "react-modal";
 
 const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
@@ -29,6 +29,7 @@ export default function CartPage() {
   const [widgets, setWidgets] = useState<TossPaymentsWidgets | null>(null); // 결제 위젯
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
+  const [paymentItems, setPaymentItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -201,7 +202,7 @@ export default function CartPage() {
     fetchCartItems();
   }, []);
 
-  const totalPrice = cartItems.reduce((sum, item) => {
+  const totalPrice = paymentItems.reduce((sum, item) => {
     return sum + (item.product?.price ?? 0) * item.quantity;
   }, 0);
 
@@ -309,7 +310,7 @@ export default function CartPage() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              items: cartItems.map((i) => ({
+              items: paymentItems.map((i) => ({
                 productId: i.productId,
                 quantity: i.quantity,
                 price: i.product?.price || 0,
@@ -328,15 +329,17 @@ export default function CartPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            items: cartItems.map((i) => ({
+            items: paymentItems.map((i) => ({
               productId: i.productId,
               quantity: i.quantity,
+              productSizeId: i.productSizeId,
               price: i.product?.price || 0,
             })),
           }),
         });
         const postData = await postRes.json();
         orderId = postData.orderId;
+        console.log(postData);
       }
 
       // toss 결제 실행
@@ -353,6 +356,17 @@ export default function CartPage() {
       console.error("결제 처리 오류:", error);
       alert("결제 처리 중 문제가 발생했습니다.");
     }
+  };
+
+  const handleItemToggle = (index: number) => {
+    const item = cartItems[index];
+
+    setPaymentItems((prev) => {
+      if (prev.some((p) => p.cartId === item.cartId)) {
+        return prev.filter((p) => p.cartId !== item.cartId);
+      }
+      return [...prev, item];
+    });
   };
 
   return (
@@ -387,11 +401,17 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 장바구니 목록 */}
             <div className="lg:col-span-2 space-y-4">
-              {cartItems.map((item) => (
+              {cartItems.map((item, index) => (
                 <div
                   key={item.cartId}
                   className="border border-gray-200 rounded-lg p-4 flex gap-4"
                 >
+                  <div className="flex-col items-start">
+                    <input
+                      type="checkbox"
+                      onChange={() => handleItemToggle(index)}
+                    />
+                  </div>
                   {item.image ? (
                     <Link href={`/products/${item.productId}`}>
                       <div className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0">
@@ -408,7 +428,6 @@ export default function CartPage() {
                       이미지 없음
                     </div>
                   )}
-
                   <div className="flex-1">
                     <Link href={`/products/${item.productId}`}>
                       <h3 className="font-medium mb-2 hover:underline">
@@ -432,7 +451,6 @@ export default function CartPage() {
                       원
                     </p>
                   </div>
-
                   <button
                     onClick={() => handleRemoveItem(item.cartId)}
                     className="text-gray-400 hover:text-gray-600 transition-colors self-start"

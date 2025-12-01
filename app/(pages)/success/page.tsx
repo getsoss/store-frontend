@@ -16,10 +16,14 @@ export default function SuccessPage() {
     const amount = Number(params.get("amount"));
 
     (async () => {
+      const token = localStorage.getItem("accessToken");
       try {
         const res = await fetch("/api/confirm", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ paymentKey, orderId, amount }),
         });
 
